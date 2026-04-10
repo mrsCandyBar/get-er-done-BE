@@ -150,9 +150,9 @@ router.get('/:id', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const task = new Task({
-      title: req.body.title,
-      description: req.body.description,
-      completed: req.body.completed,
+      title: String(req.body.title ?? ''),
+      description: req.body.description != null ? String(req.body.description) : undefined,
+      completed: req.body.completed != null ? Boolean(req.body.completed) : undefined,
     });
     const saved = await task.save();
     res.status(201).json(saved);
@@ -199,13 +199,14 @@ router.post('/', async (req, res) => {
  */
 router.put('/:id', async (req, res) => {
   try {
+    const update = {};
+    if (req.body.title != null) update.title = String(req.body.title);
+    if (req.body.description != null) update.description = String(req.body.description);
+    if (req.body.completed != null) update.completed = Boolean(req.body.completed);
+
     const task = await Task.findByIdAndUpdate(
       req.params.id,
-      {
-        title: req.body.title,
-        description: req.body.description,
-        completed: req.body.completed,
-      },
+      update,
       { new: true, runValidators: true }
     );
     if (!task) return res.status(404).json({ message: 'Task not found' });
