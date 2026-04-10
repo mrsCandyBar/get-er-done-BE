@@ -7,7 +7,7 @@ const {
   createCreateHandler,
   createUpdateHandler,
   createDeleteHandler,
-} = require('../utils/getHandlers');
+} = require('../utils/crudHandlers');
 
 router.get('/getAll', createGetAllHandler({
   model: Task,

@@ -5,6 +5,8 @@ const swaggerUi = require('swagger-ui-express');
 const swaggerSpecs = require('./swagger');
 const db = require('./db/connection');
 const tasksRouter = require('./routes/tasks');
+const taskCategoriesRouter = require('./routes/taskCategories');
+const usersRouter = require('./routes/users');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -83,11 +85,21 @@ app.get('/', (req, res) => {
       </tr>
     </thead>
     <tbody>
-      <tr><td>GET</td>    <td><code>/api/tasks/getAll</code></td>         <td>Retrieve all tasks</td></tr>
-      <tr><td>GET</td>    <td><code>/api/tasks/get/:id</code></td>        <td>Retrieve a single task</td></tr>
-      <tr><td>POST</td>   <td><code>/api/tasks/create</code></td>         <td>Create a new task</td></tr>
-      <tr><td>PUT</td>    <td><code>/api/tasks/update/:id</code></td>     <td>Update a task</td></tr>
-      <tr><td>DELETE</td> <td><code>/api/tasks/delete/:id</code></td>     <td>Delete a task</td></tr>
+      <tr><td>GET</td>    <td><code>/api/tasks/getAll</code></td>                   <td>Retrieve all tasks</td></tr>
+      <tr><td>GET</td>    <td><code>/api/tasks/get/:id</code></td>                  <td>Retrieve a single task</td></tr>
+      <tr><td>POST</td>   <td><code>/api/tasks/create</code></td>                   <td>Create a new task</td></tr>
+      <tr><td>PUT</td>    <td><code>/api/tasks/update/:id</code></td>               <td>Update a task</td></tr>
+      <tr><td>DELETE</td> <td><code>/api/tasks/delete/:id</code></td>               <td>Delete a task</td></tr>
+      <tr><td>GET</td>    <td><code>/api/task-categories/getAll</code></td>         <td>Retrieve all task categories</td></tr>
+      <tr><td>GET</td>    <td><code>/api/task-categories/get/:id</code></td>        <td>Retrieve a single task category</td></tr>
+      <tr><td>POST</td>   <td><code>/api/task-categories/create</code></td>         <td>Create a task category</td></tr>
+      <tr><td>PUT</td>    <td><code>/api/task-categories/update/:id</code></td>     <td>Update a task category</td></tr>
+      <tr><td>DELETE</td> <td><code>/api/task-categories/delete/:id</code></td>     <td>Delete a task category</td></tr>
+      <tr><td>GET</td>    <td><code>/api/users/getAll</code></td>                   <td>Retrieve all users</td></tr>
+      <tr><td>GET</td>    <td><code>/api/users/get/:id</code></td>                  <td>Retrieve a single user</td></tr>
+      <tr><td>POST</td>   <td><code>/api/users/create</code></td>                   <td>Create a user</td></tr>
+      <tr><td>PUT</td>    <td><code>/api/users/update/:id</code></td>               <td>Update a user</td></tr>
+      <tr><td>DELETE</td> <td><code>/api/users/delete/:id</code></td>               <td>Delete a user</td></tr>
     </tbody>
   </table>
 
@@ -114,6 +126,8 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
 
 // ── API Routes ────────────────────────────────────────────────────────────────
 app.use('/api/tasks', tasksRouter);
+app.use('/api/task-categories', taskCategoriesRouter);
+app.use('/api/users', usersRouter);
 
 // ── Start (only when run directly, not when required by tests) ────────────────
 if (require.main === module) {
