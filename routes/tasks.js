@@ -1,75 +1,53 @@
 const express = require('express');
 const router = express.Router();
 const Task = require('../models/task.model');
+const {
+  createGetAllHandler,
+  createGetOneHandler,
+  createCreateHandler,
+  createUpdateHandler,
+  createDeleteHandler,
+} = require('../utils/getHandlers');
 
-router.get('/', async (req, res) => {
-  try {
-    const tasks = await Task.find().sort({ createdAt: -1 });
-    res.json(tasks);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
+router.get('/getAll', createGetAllHandler({
+  model: Task,
+  buildSearchParams: () => ({}),
+  sort: { createdAt: -1 },
+}));
 
-router.get('/:id', async (req, res) => {
-  try {
-    const task = await Task.findById(req.params.id);
-    if (!task) return res.status(404).json({ message: 'Task not found' });
-    res.json(task);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
+router.get('/get/:id', createGetOneHandler({
+  model: Task,
+  buildSearchParams: (req) => ({ _id: req.params.id }),
+  notFoundMessage: 'Task not found',
+}));
 
-router.post('/', async (req, res) => {
-  try {
-    const task = new Task({
-      title: String(req.body.title ?? ''),
-      description: req.body.description != null ? String(req.body.description) : undefined,
-      completed: req.body.completed != null ? Boolean(req.body.completed) : undefined,
-    });
-    const saved = await task.save();
-    res.status(201).json(saved);
-  } catch (err) {
-    if (err.name === 'ValidationError') {
-      return res.status(400).json({ message: err.message });
-    }
-    res.status(500).json({ message: err.message });
-  }
-});
+router.post('/create', createCreateHandler({
+  model: Task,
+  buildPayload: (req) => ({
+    title: String(req.body.title ?? ''),
+    description: req.body.description != null ? String(req.body.description) : undefined,
+    completed: req.body.completed != null ? Boolean(req.body.completed) : undefined,
+  }),
+}));
 
-router.put('/:id', async (req, res) => {
-  try {
+router.put('/update/:id', createUpdateHandler({
+  model: Task,
+  buildSearchParams: (req) => ({ _id: req.params.id }),
+  buildUpdate: (req) => {
     const update = {};
     if (req.body.title != null) update.title = String(req.body.title);
     if (req.body.description != null) update.description = String(req.body.description);
     if (req.body.completed != null) update.completed = Boolean(req.body.completed);
+    return update;
+  },
+  notFoundMessage: 'Task not found',
+}));
 
-    const task = await Task.findByIdAndUpdate(
-      req.params.id,
-      update,
-      { new: true, runValidators: true }
-    );
-    if (!task) return res.status(404).json({ message: 'Task not found' });
-    res.json(task);
-
-  } catch (err) {
-    if (err.name === 'ValidationError') {
-      return res.status(400).json({ message: err.message });
-    }
-    res.status(500).json({ message: err.message });
-  }
-});
-
-router.delete('/:id', async (req, res) => {
-  try {
-    const task = await Task.findByIdAndDelete(req.params.id);
-    if (!task) return res.status(404).json({ message: 'Task not found' });
-    res.json({ message: 'Task deleted successfully' });
-    
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
+router.delete('/delete/:id', createDeleteHandler({
+  model: Task,
+  buildSearchParams: (req) => ({ _id: req.params.id }),
+  notFoundMessage: 'Task not found',
+  successMessage: 'Task deleted successfully',
+}));
 
 module.exports = router;
