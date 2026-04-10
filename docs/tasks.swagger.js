@@ -63,7 +63,7 @@
 
 /**
  * @swagger
- * /api/tasks:
+ * /api/tasks/getAll:
  *   get:
  *     summary: Retrieve all tasks
  *     tags: [Tasks]
@@ -82,7 +82,7 @@
 
 /**
  * @swagger
- * /api/tasks/{id}:
+ * /api/tasks/get/{id}:
  *   get:
  *     summary: Retrieve a single task by ID
  *     tags: [Tasks]
@@ -108,7 +108,7 @@
 
 /**
  * @swagger
- * /api/tasks:
+ * /api/tasks/create:
  *   post:
  *     summary: Create a new task
  *     tags: [Tasks]
@@ -133,7 +133,7 @@
 
 /**
  * @swagger
- * /api/tasks/{id}:
+ * /api/tasks/update/{id}:
  *   put:
  *     summary: Update a task by ID
  *     tags: [Tasks]
@@ -167,7 +167,7 @@
 
 /**
  * @swagger
- * /api/tasks/{id}:
+ * /api/tasks/delete/{id}:
  *   delete:
  *     summary: Delete a task by ID
  *     tags: [Tasks]

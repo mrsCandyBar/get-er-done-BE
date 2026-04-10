@@ -65,42 +65,42 @@ describe('GET /api-docs', () => {
 });
 
 // ── Tasks CRUD ────────────────────────────────────────────────────────────────
-describe('GET /api/tasks', () => {
+describe('GET /api/tasks/getAll', () => {
   it('returns 200 and an array of tasks', async () => {
-    const res = await request(app).get('/api/tasks');
+    const res = await request(app).get('/api/tasks/getAll');
     expect(res.status).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
   });
 });
 
-describe('GET /api/tasks/:id', () => {
+describe('GET /api/tasks/get/:id', () => {
   it('returns 200 and the task', async () => {
-    const res = await request(app).get(`/api/tasks/${mockTask._id}`);
+    const res = await request(app).get(`/api/tasks/get/${mockTask._id}`);
     expect(res.status).toBe(200);
     expect(res.body.title).toBe(mockTask.title);
   });
 
   it('returns 404 when task is not found', async () => {
     Task.findById.mockResolvedValueOnce(null);
-    const res = await request(app).get('/api/tasks/000000000000000000000000');
+    const res = await request(app).get('/api/tasks/get/000000000000000000000000');
     expect(res.status).toBe(404);
   });
 });
 
-describe('POST /api/tasks', () => {
+describe('POST /api/tasks/create', () => {
   it('returns 201 and the created task', async () => {
     const res = await request(app)
-      .post('/api/tasks')
+      .post('/api/tasks/create')
       .send({ title: 'Buy groceries', description: 'Milk, eggs' });
     expect(res.status).toBe(201);
     expect(res.body.title).toBe(mockTask.title);
   });
 });
 
-describe('PUT /api/tasks/:id', () => {
+describe('PUT /api/tasks/update/:id', () => {
   it('returns 200 and the updated task', async () => {
     const res = await request(app)
-      .put(`/api/tasks/${mockTask._id}`)
+      .put(`/api/tasks/update/${mockTask._id}`)
       .send({ title: 'Updated title', completed: true });
     expect(res.status).toBe(200);
     expect(res.body._id).toBe(mockTask._id);
@@ -109,22 +109,22 @@ describe('PUT /api/tasks/:id', () => {
   it('returns 404 when task is not found', async () => {
     Task.findByIdAndUpdate.mockResolvedValueOnce(null);
     const res = await request(app)
-      .put('/api/tasks/000000000000000000000000')
+      .put('/api/tasks/update/000000000000000000000000')
       .send({ title: 'x' });
     expect(res.status).toBe(404);
   });
 });
 
-describe('DELETE /api/tasks/:id', () => {
+describe('DELETE /api/tasks/delete/:id', () => {
   it('returns 200 with success message', async () => {
-    const res = await request(app).delete(`/api/tasks/${mockTask._id}`);
+    const res = await request(app).delete(`/api/tasks/delete/${mockTask._id}`);
     expect(res.status).toBe(200);
     expect(res.body.message).toBe('Task deleted successfully');
   });
 
   it('returns 404 when task is not found', async () => {
     Task.findByIdAndDelete.mockResolvedValueOnce(null);
-    const res = await request(app).delete('/api/tasks/000000000000000000000000');
+    const res = await request(app).delete('/api/tasks/delete/000000000000000000000000');
     expect(res.status).toBe(404);
   });
 });

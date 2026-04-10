@@ -83,11 +83,11 @@ app.get('/', (req, res) => {
       </tr>
     </thead>
     <tbody>
-      <tr><td>GET</td>    <td><code>/api/tasks</code></td>         <td>Retrieve all tasks</td></tr>
-      <tr><td>GET</td>    <td><code>/api/tasks/:id</code></td>     <td>Retrieve a single task</td></tr>
-      <tr><td>POST</td>   <td><code>/api/tasks</code></td>         <td>Create a new task</td></tr>
-      <tr><td>PUT</td>    <td><code>/api/tasks/:id</code></td>     <td>Update a task</td></tr>
-      <tr><td>DELETE</td> <td><code>/api/tasks/:id</code></td>     <td>Delete a task</td></tr>
+      <tr><td>GET</td>    <td><code>/api/tasks/getAll</code></td>         <td>Retrieve all tasks</td></tr>
+      <tr><td>GET</td>    <td><code>/api/tasks/get/:id</code></td>        <td>Retrieve a single task</td></tr>
+      <tr><td>POST</td>   <td><code>/api/tasks/create</code></td>         <td>Create a new task</td></tr>
+      <tr><td>PUT</td>    <td><code>/api/tasks/update/:id</code></td>     <td>Update a task</td></tr>
+      <tr><td>DELETE</td> <td><code>/api/tasks/delete/:id</code></td>     <td>Delete a task</td></tr>
     </tbody>
   </table>
 
