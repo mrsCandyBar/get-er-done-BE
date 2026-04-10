@@ -7,15 +7,32 @@ const taskCategorySchema = new mongoose.Schema(
       trim: true,
       default: '',
     },
+    count: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
     description: {
       type: String,
       trim: true,
       default: '',
     },
-    color: {
-      type: String,
-      trim: true,
-      default: '',
+    achievements: {
+      completed: {
+        type: Number,
+        default: 0,
+        min: 0,
+      },
+      busy: {
+        type: Number,
+        default: 0,
+        min: 0,
+      },
+      waiting: {
+        type: Number,
+        default: 0,
+        min: 0,
+      },
     },
   },
   {

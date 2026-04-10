@@ -105,12 +105,17 @@ app.get('/', (req, res) => {
 
   <h2>Task Object</h2>
   <pre><code>{
-  "_id":         "string  (MongoDB ObjectId)",
-  "title":       "string  (required)",
-  "description": "string  (optional)",
-  "completed":   "boolean (default: false)",
-  "createdAt":   "date",
-  "updatedAt":   "date"
+  "_id":         "string (MongoDB ObjectId)",
+  "name":        "string (required)",
+  "description": "string (optional)",
+  "createdDate": "date",
+  "recur":       ["string"],
+  "completed": {
+    "completedDate": "date | null",
+    "finalNotes":    "string",
+    "recur":         "boolean"
+  },
+  "category":    "string (taskCategoryId)"
 }</code></pre>
 </body>
 </html>`);

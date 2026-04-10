@@ -16,49 +16,87 @@
  *     Task:
  *       type: object
  *       required:
- *         - title
+ *         - name
  *       properties:
  *         _id:
  *           type: string
  *           description: Auto-generated MongoDB ObjectId
- *         title:
+ *         name:
  *           type: string
- *           description: Title of the task
+ *           description: Name of the task
  *         description:
  *           type: string
  *           description: Optional description of the task
+ *         createdDate:
+ *           type: string
+ *           format: date-time
+ *         recur:
+ *           type: array
+ *           items:
+ *             type: string
  *         completed:
- *           type: boolean
- *           description: Whether the task is completed
- *           default: false
- *         createdAt:
+ *           type: object
+ *           properties:
+ *             completedDate:
+ *               type: string
+ *               format: date-time
+ *             finalNotes:
+ *               type: string
+ *             recur:
+ *               type: boolean
+ *         category:
  *           type: string
- *           format: date-time
- *         updatedAt:
- *           type: string
- *           format: date-time
+ *           description: Related task category ID
  *       example:
- *         _id: 661f0f1e2f3a4b5c6d7e8f90
- *         title: Buy groceries
- *         description: Milk, eggs, bread
- *         completed: false
- *         createdAt: 2024-04-16T10:00:00.000Z
- *         updatedAt: 2024-04-16T10:00:00.000Z
+ *         _id: 69d76d7ab3f97a842c094818
+ *         name: Complete Git-er-done
+ *         description: get her off the ground!
+ *         createdDate: 2026-10-03T22:00:00.000Z
+ *         recur: []
+ *         completed:
+ *           completedDate: 2026-10-03T22:00:00.000Z
+ *           finalNotes: will do this again!
+ *           recur: true
+ *         category: 69d769a5b3f97a842c094800
  *     TaskInput:
  *       type: object
  *       required:
- *         - title
+ *         - name
  *       properties:
- *         title:
+ *         name:
  *           type: string
  *         description:
  *           type: string
+ *         createdDate:
+ *           type: string
+ *           format: date-time
+ *         recur:
+ *           type: array
+ *           items:
+ *             type: string
  *         completed:
- *           type: boolean
+ *           type: object
+ *           properties:
+ *             completedDate:
+ *               type: string
+ *               format: date-time
+ *             finalNotes:
+ *               type: string
+ *             recur:
+ *               type: boolean
+ *         category:
+ *           type: string
+ *           description: Task category ID
  *       example:
- *         title: Buy groceries
- *         description: Milk, eggs, bread
- *         completed: false
+ *         name: Complete Git-er-done
+ *         description: get her off the ground!
+ *         createdDate: 2026-10-03T22:00:00.000Z
+ *         recur: []
+ *         completed:
+ *           completedDate: 2026-10-03T22:00:00.000Z
+ *           finalNotes: will do this again!
+ *           recur: true
+ *         category: 69d769a5b3f97a842c094800
  */
 
 /**

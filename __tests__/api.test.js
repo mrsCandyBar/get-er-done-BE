@@ -11,31 +11,55 @@ jest.mock('../db/connection', () => ({
 
 // ── Mock the Task model ───────────────────────────────────────────────────────
 const mockTask = {
-  _id: '661f0f1e2f3a4b5c6d7e8f90',
-  title: 'Buy groceries',
-  description: 'Milk, eggs',
-  completed: false,
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString(),
+  _id: '69d76d7ab3f97a842c094818',
+  name: 'Complete Git-er-done',
+  description: 'get her off the ground!',
+  createdDate: new Date('2026-10-03T22:00:00.000Z').toISOString(),
+  recur: [],
+  completed: {
+    completedDate: new Date('2026-10-03T22:00:00.000Z').toISOString(),
+    finalNotes: 'will do this again!',
+    recur: true,
+  },
+  category: '69d769a5b3f97a842c094800',
 };
 
 const mockTaskCategory = {
-  _id: '661f0f1e2f3a4b5c6d7e8faa',
-  name: 'Work',
-  description: 'Tasks related to work',
-  color: 'blue',
+  _id: '69d769a5b3f97a842c094800',
+  name: 'fun',
+  count: 0,
+  description: '',
+  achievements: {
+    completed: 0,
+    busy: 0,
+    waiting: 0,
+  },
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
 };
 
 const mockUser = {
-  _id: '661f0f1e2f3a4b5c6d7e8fbb',
-  username: 'jdoe',
-  email: 'jdoe@example.com',
-  displayName: 'Jane Doe',
-  active: true,
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString(),
+  _id: '69d7663ab3f97a842c0947fc',
+  name: 'Candice Bar',
+  dob: new Date('1987-04-06T22:00:00.000Z').toISOString(),
+  about: 'I am a developer looking to expand my ideals',
+  inspirations: [
+    {
+      inspirations: 'Vivienne Westwood, Yoshitaka Amano, Sephiroth',
+      reason: 'to be more bold!',
+      url: '',
+    },
+  ],
+  progressUpdatePush: '1 month',
+  achievements: {
+    completed: {
+      task: [],
+      fun: [],
+      new: [],
+    },
+  },
+  startedDate: new Date('2026-10-03T22:00:00.000Z').toISOString(),
+  updatedDate: new Date('2026-10-03T22:00:00.000Z').toISOString(),
 };
 
 jest.mock('../models/task.model', () => {
@@ -124,7 +148,7 @@ describe('GET /api/tasks/get/:id', () => {
   it('returns 200 and the task', async () => {
     const res = await request(app).get(`/api/tasks/get/${mockTask._id}`);
     expect(res.status).toBe(200);
-    expect(res.body.title).toBe(mockTask.title);
+    expect(res.body.name).toBe(mockTask.name);
   });
 
   it('returns 404 when task is not found', async () => {
@@ -138,9 +162,20 @@ describe('POST /api/tasks/create', () => {
   it('returns 201 and the created task', async () => {
     const res = await request(app)
       .post('/api/tasks/create')
-      .send({ title: 'Buy groceries', description: 'Milk, eggs' });
+      .send({
+        name: 'Complete Git-er-done',
+        description: 'get her off the ground!',
+        createdDate: '2026-10-03T22:00:00.000Z',
+        recur: [],
+        completed: {
+          completedDate: '2026-10-03T22:00:00.000Z',
+          finalNotes: 'will do this again!',
+          recur: true,
+        },
+        category: '69d769a5b3f97a842c094800',
+      });
     expect(res.status).toBe(201);
-    expect(res.body.title).toBe(mockTask.title);
+    expect(res.body.name).toBe(mockTask.name);
   });
 });
 
@@ -148,7 +183,14 @@ describe('PUT /api/tasks/update/:id', () => {
   it('returns 200 and the updated task', async () => {
     const res = await request(app)
       .put(`/api/tasks/update/${mockTask._id}`)
-      .send({ title: 'Updated title', completed: true });
+      .send({
+        name: 'Complete Git-er-done',
+        completed: {
+          completedDate: '2026-10-03T22:00:00.000Z',
+          finalNotes: 'updated note',
+          recur: false,
+        },
+      });
     expect(res.status).toBe(200);
     expect(res.body._id).toBe(mockTask._id);
   });
@@ -157,7 +199,7 @@ describe('PUT /api/tasks/update/:id', () => {
     Task.findByIdAndUpdate.mockResolvedValueOnce(null);
     const res = await request(app)
       .put('/api/tasks/update/000000000000000000000000')
-      .send({ title: 'x' });
+      .send({ name: 'x' });
     expect(res.status).toBe(404);
   });
 });
@@ -203,7 +245,12 @@ describe('POST /api/task-categories/create', () => {
   it('returns 201 and the created task category', async () => {
     const res = await request(app)
       .post('/api/task-categories/create')
-      .send({ name: 'Work', description: 'Tasks related to work' });
+      .send({
+        name: 'fun',
+        count: 0,
+        description: '',
+        achievements: { completed: 0, busy: 0, waiting: 0 },
+      });
     expect(res.status).toBe(201);
     expect(res.body.name).toBe(mockTaskCategory.name);
   });
@@ -213,7 +260,11 @@ describe('PUT /api/task-categories/update/:id', () => {
   it('returns 200 and the updated task category', async () => {
     const res = await request(app)
       .put(`/api/task-categories/update/${mockTaskCategory._id}`)
-      .send({ name: 'Home', color: 'green' });
+      .send({
+        name: 'fun',
+        count: 1,
+        achievements: { completed: 1, busy: 0, waiting: 0 },
+      });
     expect(res.status).toBe(200);
     expect(res.body._id).toBe(mockTaskCategory._id);
   });
@@ -254,7 +305,7 @@ describe('GET /api/users/get/:id', () => {
   it('returns 200 and the user', async () => {
     const res = await request(app).get(`/api/users/get/${mockUser._id}`);
     expect(res.status).toBe(200);
-    expect(res.body.username).toBe(mockUser.username);
+    expect(res.body.name).toBe(mockUser.name);
   });
 
   it('returns 404 when user is not found', async () => {
@@ -268,9 +319,30 @@ describe('POST /api/users/create', () => {
   it('returns 201 and the created user', async () => {
     const res = await request(app)
       .post('/api/users/create')
-      .send({ username: 'jdoe', email: 'jdoe@example.com' });
+      .send({
+        name: 'Candice Bar',
+        dob: '1987-04-06T22:00:00.000Z',
+        about: 'I am a developer looking to expand my ideals',
+        inspirations: [
+          {
+            inspirations: 'Vivienne Westwood, Yoshitaka Amano, Sephiroth',
+            reason: 'to be more bold!',
+            url: '',
+          },
+        ],
+        progressUpdatePush: '1 month',
+        achievements: {
+          completed: {
+            task: [],
+            fun: [],
+            new: [],
+          },
+        },
+        startedDate: '2026-10-03T22:00:00.000Z',
+        updatedDate: '2026-10-03T22:00:00.000Z',
+      });
     expect(res.status).toBe(201);
-    expect(res.body.username).toBe(mockUser.username);
+    expect(res.body.name).toBe(mockUser.name);
   });
 });
 
@@ -278,7 +350,10 @@ describe('PUT /api/users/update/:id', () => {
   it('returns 200 and the updated user', async () => {
     const res = await request(app)
       .put(`/api/users/update/${mockUser._id}`)
-      .send({ displayName: 'Updated Name', active: false });
+      .send({
+        about: 'Updated about text',
+        progressUpdatePush: '2 weeks',
+      });
     expect(res.status).toBe(200);
     expect(res.body._id).toBe(mockUser._id);
   });
@@ -287,7 +362,7 @@ describe('PUT /api/users/update/:id', () => {
     User.findByIdAndUpdate.mockResolvedValueOnce(null);
     const res = await request(app)
       .put('/api/users/update/000000000000000000000000')
-      .send({ username: 'x' });
+      .send({ name: 'x' });
     expect(res.status).toBe(404);
   });
 });

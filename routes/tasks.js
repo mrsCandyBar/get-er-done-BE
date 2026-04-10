@@ -9,10 +9,55 @@ const {
   createDeleteHandler,
 } = require('../utils/crudHandlers');
 
+const buildTaskPayload = (body = {}) => {
+  const payload = {};
+
+  if (body.name != null || body.title != null) {
+    payload.name = String(body.name ?? body.title);
+  }
+
+  if (body.description != null) {
+    payload.description = String(body.description);
+  }
+
+  if (body.createdDate != null) {
+    payload.createdDate = new Date(body.createdDate);
+  }
+
+  if (Array.isArray(body.recur)) {
+    payload.recur = [...body.recur];
+  }
+
+  if (body.completed && typeof body.completed === 'object' && !Array.isArray(body.completed)) {
+    const completed = {};
+
+    if (body.completed.completedDate != null) {
+      completed.completedDate = new Date(body.completed.completedDate);
+    }
+
+    if (body.completed.finalNotes != null) {
+      completed.finalNotes = String(body.completed.finalNotes);
+    }
+
+    if (body.completed.recur != null) {
+      completed.recur = Boolean(body.completed.recur);
+    }
+
+    payload.completed = completed;
+  }
+
+  const categoryId = body.category ?? body.taskCategoryId;
+  if (categoryId != null && categoryId !== '') {
+    payload.category = categoryId;
+  }
+
+  return payload;
+};
+
 router.get('/getAll', createGetAllHandler({
   model: Task,
   buildSearchParams: () => ({}),
-  sort: { createdAt: -1 },
+  sort: { createdDate: -1 },
 }));
 
 router.get('/get/:id', createGetOneHandler({
@@ -23,23 +68,13 @@ router.get('/get/:id', createGetOneHandler({
 
 router.post('/create', createCreateHandler({
   model: Task,
-  buildPayload: (req) => ({
-    title: String(req.body.title ?? ''),
-    description: req.body.description != null ? String(req.body.description) : undefined,
-    completed: req.body.completed != null ? Boolean(req.body.completed) : undefined,
-  }),
+  buildPayload: (req) => buildTaskPayload(req.body),
 }));
 
 router.put('/update/:id', createUpdateHandler({
   model: Task,
   buildSearchParams: (req) => ({ _id: req.params.id }),
-  buildUpdate: (req) => {
-    const update = {};
-    if (req.body.title != null) update.title = String(req.body.title);
-    if (req.body.description != null) update.description = String(req.body.description);
-    if (req.body.completed != null) update.completed = Boolean(req.body.completed);
-    return update;
-  },
+  buildUpdate: (req) => buildTaskPayload(req.body),
   notFoundMessage: 'Task not found',
 }));
 

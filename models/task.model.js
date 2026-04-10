@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const taskSchema = new mongoose.Schema(
   {
-    title: {
+    name: {
       type: String,
       required: true,
       trim: true,
@@ -12,12 +12,39 @@ const taskSchema = new mongoose.Schema(
       trim: true,
       default: '',
     },
+    createdDate: {
+      type: Date,
+      default: Date.now,
+    },
+    recur: {
+      type: [mongoose.Schema.Types.Mixed],
+      default: [],
+    },
     completed: {
-      type: Boolean,
-      default: false,
+      completedDate: {
+        type: Date,
+        default: null,
+      },
+      finalNotes: {
+        type: String,
+        trim: true,
+        default: '',
+      },
+      recur: {
+        type: Boolean,
+        default: false,
+      },
+    },
+    category: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'TaskCategory',
+      default: null,
     },
   },
-  { timestamps: true }
+  {
+    strict: false,
+    collection: 'tasks',
+  }
 );
 
 module.exports = mongoose.model('Task', taskSchema);

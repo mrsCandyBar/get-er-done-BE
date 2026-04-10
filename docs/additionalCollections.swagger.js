@@ -22,10 +22,19 @@
  *           type: string
  *         name:
  *           type: string
+ *         count:
+ *           type: integer
  *         description:
  *           type: string
- *         color:
- *           type: string
+ *         achievements:
+ *           type: object
+ *           properties:
+ *             completed:
+ *               type: integer
+ *             busy:
+ *               type: integer
+ *             waiting:
+ *               type: integer
  *         createdAt:
  *           type: string
  *           format: date-time
@@ -33,64 +42,169 @@
  *           type: string
  *           format: date-time
  *       example:
- *         _id: 661f0f1e2f3a4b5c6d7e8faa
- *         name: Work
- *         description: Tasks related to work
- *         color: blue
+ *         _id: 69d769a5b3f97a842c094800
+ *         name: fun
+ *         count: 0
+ *         description: ''
+ *         achievements:
+ *           completed: 0
+ *           busy: 0
+ *           waiting: 0
  *     TaskCategoryInput:
  *       type: object
  *       properties:
  *         name:
  *           type: string
+ *         count:
+ *           type: integer
  *         description:
  *           type: string
- *         color:
- *           type: string
+ *         achievements:
+ *           type: object
+ *           properties:
+ *             completed:
+ *               type: integer
+ *             busy:
+ *               type: integer
+ *             waiting:
+ *               type: integer
  *       example:
- *         name: Work
- *         description: Tasks related to work
- *         color: blue
+ *         name: fun
+ *         count: 0
+ *         description: ''
+ *         achievements:
+ *           completed: 0
+ *           busy: 0
+ *           waiting: 0
  *     User:
  *       type: object
  *       properties:
  *         _id:
  *           type: string
- *         username:
+ *         name:
  *           type: string
- *         email:
- *           type: string
- *         displayName:
- *           type: string
- *         active:
- *           type: boolean
- *         createdAt:
+ *         dob:
  *           type: string
  *           format: date-time
- *         updatedAt:
+ *         about:
+ *           type: string
+ *         inspirations:
+ *           type: array
+ *           items:
+ *             type: object
+ *             properties:
+ *               inspirations:
+ *                 type: string
+ *               reason:
+ *                 type: string
+ *               url:
+ *                 type: string
+ *         progressUpdatePush:
+ *           type: string
+ *         achievements:
+ *           type: object
+ *           properties:
+ *             completed:
+ *               type: object
+ *               properties:
+ *                 task:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                 fun:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                 new:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *         startedDate:
+ *           type: string
+ *           format: date-time
+ *         updatedDate:
  *           type: string
  *           format: date-time
  *       example:
- *         _id: 661f0f1e2f3a4b5c6d7e8fbb
- *         username: jdoe
- *         email: jdoe@example.com
- *         displayName: Jane Doe
- *         active: true
+ *         _id: 69d7663ab3f97a842c0947fc
+ *         name: Candice Bar
+ *         dob: 1987-04-06T22:00:00.000Z
+ *         about: I am a developer looking to expand my ideals
+ *         inspirations:
+ *           - inspirations: Vivienne Westwood, Yoshitaka Amano, Sephiroth
+ *             reason: to be more bold!
+ *             url: ''
+ *         progressUpdatePush: 1 month
+ *         achievements:
+ *           completed:
+ *             task: []
+ *             fun: []
+ *             new: []
+ *         startedDate: 2026-10-03T22:00:00.000Z
+ *         updatedDate: 2026-10-03T22:00:00.000Z
  *     UserInput:
  *       type: object
  *       properties:
- *         username:
+ *         name:
  *           type: string
- *         email:
+ *         dob:
  *           type: string
- *         displayName:
+ *           format: date-time
+ *         about:
  *           type: string
- *         active:
- *           type: boolean
+ *         inspirations:
+ *           type: array
+ *           items:
+ *             type: object
+ *             properties:
+ *               inspirations:
+ *                 type: string
+ *               reason:
+ *                 type: string
+ *               url:
+ *                 type: string
+ *         progressUpdatePush:
+ *           type: string
+ *         achievements:
+ *           type: object
+ *           properties:
+ *             completed:
+ *               type: object
+ *               properties:
+ *                 task:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                 fun:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                 new:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *         startedDate:
+ *           type: string
+ *           format: date-time
+ *         updatedDate:
+ *           type: string
+ *           format: date-time
  *       example:
- *         username: jdoe
- *         email: jdoe@example.com
- *         displayName: Jane Doe
- *         active: true
+ *         name: Candice Bar
+ *         dob: 1987-04-06T22:00:00.000Z
+ *         about: I am a developer looking to expand my ideals
+ *         inspirations:
+ *           - inspirations: Vivienne Westwood, Yoshitaka Amano, Sephiroth
+ *             reason: to be more bold!
+ *             url: ''
+ *         progressUpdatePush: 1 month
+ *         achievements:
+ *           completed:
+ *             task: []
+ *             fun: []
+ *             new: []
+ *         startedDate: 2026-10-03T22:00:00.000Z
+ *         updatedDate: 2026-10-03T22:00:00.000Z
  */
 
 /**

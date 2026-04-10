@@ -9,6 +9,34 @@ const {
   createDeleteHandler,
 } = require('../utils/crudHandlers');
 
+const buildTaskCategoryPayload = (body = {}) => {
+  const payload = {};
+
+  if (body.name != null) payload.name = String(body.name);
+  if (body.count != null) payload.count = Number(body.count);
+  if (body.description != null) payload.description = String(body.description);
+
+  if (body.achievements && typeof body.achievements === 'object') {
+    const achievements = {};
+
+    if (body.achievements.completed != null) {
+      achievements.completed = Number(body.achievements.completed);
+    }
+
+    if (body.achievements.busy != null) {
+      achievements.busy = Number(body.achievements.busy);
+    }
+
+    if (body.achievements.waiting != null) {
+      achievements.waiting = Number(body.achievements.waiting);
+    }
+
+    payload.achievements = achievements;
+  }
+
+  return payload;
+};
+
 router.get('/getAll', createGetAllHandler({
   model: TaskCategory,
   buildSearchParams: () => ({}),
@@ -23,23 +51,13 @@ router.get('/get/:id', createGetOneHandler({
 
 router.post('/create', createCreateHandler({
   model: TaskCategory,
-  buildPayload: (req) => ({
-    name: req.body.name != null ? String(req.body.name) : undefined,
-    description: req.body.description != null ? String(req.body.description) : undefined,
-    color: req.body.color != null ? String(req.body.color) : undefined,
-  }),
+  buildPayload: (req) => buildTaskCategoryPayload(req.body),
 }));
 
 router.put('/update/:id', createUpdateHandler({
   model: TaskCategory,
   buildSearchParams: (req) => ({ _id: req.params.id }),
-  buildUpdate: (req) => {
-    const update = {};
-    if (req.body.name != null) update.name = String(req.body.name);
-    if (req.body.description != null) update.description = String(req.body.description);
-    if (req.body.color != null) update.color = String(req.body.color);
-    return update;
-  },
+  buildUpdate: (req) => buildTaskCategoryPayload(req.body),
   notFoundMessage: 'Task category not found',
 }));
 
