@@ -125,6 +125,8 @@ app.get('/', (req, res) => {
       <tr><td>GET</td>    <td><code>/api/tasks/get/:id</code></td>             <td>Retrieve a single task</td></tr>
       <tr><td>POST</td>   <td><code>/api/tasks/create</code></td>              <td>Create a new task</td></tr>
       <tr><td>PUT</td>    <td><code>/api/tasks/update/:id</code></td>          <td>Update a task</td></tr>
+      <tr><td>PUT</td>    <td><code>/api/tasks/startTask/:id</code></td>       <td>Update only the task start and update dates</td></tr>
+      <tr><td>PUT</td>    <td><code>/api/tasks/completeTask/:id</code></td>    <td>Update only the completed object and update date</td></tr>
       <tr><td>DELETE</td> <td><code>/api/tasks/delete/:id</code></td>          <td>Delete a task</td></tr>
     </tbody>
   </table>
@@ -134,6 +136,8 @@ app.get('/', (req, res) => {
   "name":        "string (required)",
   "description": "string (optional)",
   "createdDate": "date",
+  "startedDate": "date | null",
+  "updatedDate": "date | null",
   "recur":       ["string"],
   "completed": {
     "completedDate": "date | null",

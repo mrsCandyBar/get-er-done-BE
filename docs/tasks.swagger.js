@@ -30,6 +30,12 @@
  *         createdDate:
  *           type: string
  *           format: date-time
+ *         startedDate:
+ *           type: string
+ *           format: date-time
+ *         updatedDate:
+ *           type: string
+ *           format: date-time
  *         recur:
  *           type: array
  *           items:
@@ -52,6 +58,8 @@
  *         name: Complete Git-er-done
  *         description: get her off the ground!
  *         createdDate: 2026-10-03T22:00:00.000Z
+ *         startedDate: 2026-10-04T09:00:00.000Z
+ *         updatedDate: 2026-10-05T12:30:00.000Z
  *         recur: []
  *         completed:
  *           completedDate: 2026-10-03T22:00:00.000Z
@@ -68,6 +76,12 @@
  *         description:
  *           type: string
  *         createdDate:
+ *           type: string
+ *           format: date-time
+ *         startedDate:
+ *           type: string
+ *           format: date-time
+ *         updatedDate:
  *           type: string
  *           format: date-time
  *         recur:
@@ -91,12 +105,48 @@
  *         name: Complete Git-er-done
  *         description: get her off the ground!
  *         createdDate: 2026-10-03T22:00:00.000Z
+ *         startedDate: 2026-10-04T09:00:00.000Z
+ *         updatedDate: 2026-10-05T12:30:00.000Z
  *         recur: []
  *         completed:
  *           completedDate: 2026-10-03T22:00:00.000Z
  *           finalNotes: will do this again!
  *           recur: true
  *         category: 69d769a5b3f97a842c094800
+ *     TaskStartInput:
+ *       type: object
+ *       properties:
+ *         startedDate:
+ *           type: string
+ *           format: date-time
+ *         updatedDate:
+ *           type: string
+ *           format: date-time
+ *       example:
+ *         startedDate: 2026-10-04T09:00:00.000Z
+ *         updatedDate: 2026-10-05T12:30:00.000Z
+ *     TaskCompleteInput:
+ *       type: object
+ *       properties:
+ *         updatedDate:
+ *           type: string
+ *           format: date-time
+ *         completed:
+ *           type: object
+ *           properties:
+ *             completedDate:
+ *               type: string
+ *               format: date-time
+ *             finalNotes:
+ *               type: string
+ *             recur:
+ *               type: boolean
+ *       example:
+ *         updatedDate: 2026-10-05T12:30:00.000Z
+ *         completed:
+ *           completedDate: 2026-10-03T22:00:00.000Z
+ *           finalNotes: will do this again!
+ *           recur: true
  */
 
 /**
@@ -191,6 +241,74 @@
  *     responses:
  *       200:
  *         description: Task updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Task'
+ *       404:
+ *         description: Task not found
+ *       400:
+ *         description: Validation error
+ *       500:
+ *         description: Server error
+ */
+
+/**
+ * @swagger
+ * /api/tasks/startTask/{id}:
+ *   put:
+ *     summary: Update only the startedDate and updatedDate for a task
+ *     tags: [Tasks]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The task ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/TaskStartInput'
+ *     responses:
+ *       200:
+ *         description: Task start fields updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Task'
+ *       404:
+ *         description: Task not found
+ *       400:
+ *         description: Validation error
+ *       500:
+ *         description: Server error
+ */
+
+/**
+ * @swagger
+ * /api/tasks/completeTask/{id}:
+ *   put:
+ *     summary: Update only the completed object and updatedDate for a task
+ *     tags: [Tasks]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The task ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/TaskCompleteInput'
+ *     responses:
+ *       200:
+ *         description: Task completion fields updated successfully
  *         content:
  *           application/json:
  *             schema:

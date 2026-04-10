@@ -8,7 +8,11 @@ const {
   createUpdateHandler,
   createDeleteHandler,
 } = require('../utils/crudHandlers');
-const { buildTaskPayload } = require('../payloads/buildTaskPayload');
+const {
+  buildTaskPayload,
+  buildTaskStartPayload,
+  buildTaskCompletePayload,
+} = require('../payloads/buildTaskPayload');
 
 router.get('/getAll', createGetAllHandler({
   model: Task,
@@ -24,13 +28,27 @@ router.get('/get/:id', createGetOneHandler({
 
 router.post('/create', createCreateHandler({
   model: Task,
-  buildPayload: (req) => buildTaskPayload(req.body),
+  buildPayload: (req) => buildTaskPayload(req.body, { includeCreatedDate: true }),
 }));
 
 router.put('/update/:id', createUpdateHandler({
   model: Task,
   buildSearchParams: (req) => ({ _id: req.params.id }),
   buildUpdate: (req) => buildTaskPayload(req.body),
+  notFoundMessage: 'Task not found',
+}));
+
+router.put('/startTask/:id', createUpdateHandler({
+  model: Task,
+  buildSearchParams: (req) => ({ _id: req.params.id }),
+  buildUpdate: (req) => buildTaskStartPayload(req.body),
+  notFoundMessage: 'Task not found',
+}));
+
+router.put('/completeTask/:id', createUpdateHandler({
+  model: Task,
+  buildSearchParams: (req) => ({ _id: req.params.id }),
+  buildUpdate: (req) => buildTaskCompletePayload(req.body),
   notFoundMessage: 'Task not found',
 }));
 

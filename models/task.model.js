@@ -16,6 +16,14 @@ const taskSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
+    startedDate: {
+      type: Date,
+      default: null,
+    },
+    updatedDate: {
+      type: Date,
+      default: null,
+    },
     recur: {
       type: [mongoose.Schema.Types.Mixed],
       default: [],

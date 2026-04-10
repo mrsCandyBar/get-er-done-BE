@@ -15,6 +15,8 @@ const mockTask = {
   name: 'Complete Git-er-done',
   description: 'get her off the ground!',
   createdDate: new Date('2026-10-03T22:00:00.000Z').toISOString(),
+  startedDate: new Date('2026-10-04T09:00:00.000Z').toISOString(),
+  updatedDate: new Date('2026-10-05T12:30:00.000Z').toISOString(),
   recur: [],
   completed: {
     completedDate: new Date('2026-10-03T22:00:00.000Z').toISOString(),
@@ -166,6 +168,8 @@ describe('POST /api/tasks/create', () => {
         name: 'Complete Git-er-done',
         description: 'get her off the ground!',
         createdDate: '2026-10-03T22:00:00.000Z',
+        startedDate: '2026-10-04T09:00:00.000Z',
+        updatedDate: '2026-10-05T12:30:00.000Z',
         recur: [],
         completed: {
           completedDate: '2026-10-03T22:00:00.000Z',
@@ -185,6 +189,8 @@ describe('PUT /api/tasks/update/:id', () => {
       .put(`/api/tasks/update/${mockTask._id}`)
       .send({
         name: 'Complete Git-er-done',
+        startedDate: '2026-10-04T09:00:00.000Z',
+        updatedDate: '2026-10-05T12:30:00.000Z',
         completed: {
           completedDate: '2026-10-03T22:00:00.000Z',
           finalNotes: 'updated note',
@@ -201,6 +207,60 @@ describe('PUT /api/tasks/update/:id', () => {
       .put('/api/tasks/update/000000000000000000000000')
       .send({ name: 'x' });
     expect(res.status).toBe(404);
+  });
+});
+
+describe('PUT /api/tasks/startTask/:id', () => {
+  it('returns 200 and only updates startedDate and updatedDate', async () => {
+    const res = await request(app)
+      .put(`/api/tasks/startTask/${mockTask._id}`)
+      .send({
+        name: 'Should be ignored',
+        startedDate: '2026-10-06T08:00:00.000Z',
+        updatedDate: '2026-10-06T08:05:00.000Z',
+      });
+
+    expect(res.status).toBe(200);
+    expect(res.body._id).toBe(mockTask._id);
+
+    const [, updatePayload] = Task.findByIdAndUpdate.mock.calls.at(-1);
+    expect(updatePayload).toEqual(expect.objectContaining({
+      startedDate: expect.any(Date),
+      updatedDate: expect.any(Date),
+    }));
+    expect(updatePayload.name).toBeUndefined();
+    expect(updatePayload.completed).toBeUndefined();
+  });
+});
+
+describe('PUT /api/tasks/completeTask/:id', () => {
+  it('returns 200 and only updates completed and updatedDate', async () => {
+    const res = await request(app)
+      .put(`/api/tasks/completeTask/${mockTask._id}`)
+      .send({
+        name: 'Should be ignored',
+        updatedDate: '2026-10-06T08:05:00.000Z',
+        completed: {
+          completedDate: '2026-10-06T08:00:00.000Z',
+          finalNotes: 'finished strong',
+          recur: false,
+        },
+      });
+
+    expect(res.status).toBe(200);
+    expect(res.body._id).toBe(mockTask._id);
+
+    const [, updatePayload] = Task.findByIdAndUpdate.mock.calls.at(-1);
+    expect(updatePayload).toEqual(expect.objectContaining({
+      updatedDate: expect.any(Date),
+      completed: expect.objectContaining({
+        completedDate: expect.any(Date),
+        finalNotes: 'finished strong',
+        recur: false,
+      }),
+    }));
+    expect(updatePayload.name).toBeUndefined();
+    expect(updatePayload.startedDate).toBeUndefined();
   });
 });
 
