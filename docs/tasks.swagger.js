@@ -75,9 +75,6 @@
  *           type: string
  *         description:
  *           type: string
- *         createdDate:
- *           type: string
- *           format: date-time
  *         startedDate:
  *           type: string
  *           format: date-time
@@ -101,10 +98,12 @@
  *         category:
  *           type: string
  *           description: Task category ID
+ *         userId:
+ *           type: string
+ *           description: User ID used to update the matching aspiration bucket when the task is created
  *       example:
  *         name: Complete Git-er-done
  *         description: get her off the ground!
- *         createdDate: 2026-10-03T22:00:00.000Z
  *         startedDate: 2026-10-04T09:00:00.000Z
  *         updatedDate: 2026-10-05T12:30:00.000Z
  *         recur: []
@@ -113,40 +112,44 @@
  *           finalNotes: will do this again!
  *           recur: true
  *         category: 69d769a5b3f97a842c094800
+ *         userId: 69d977b8abda6e6ee0cc1f29
  *     TaskStartInput:
  *       type: object
  *       properties:
- *         startedDate:
+ *         userId:
  *           type: string
- *           format: date-time
- *         updatedDate:
- *           type: string
- *           format: date-time
+ *           description: User ID used to refresh the related user's updatedDate when the task is started
  *       example:
- *         startedDate: 2026-10-04T09:00:00.000Z
- *         updatedDate: 2026-10-05T12:30:00.000Z
+ *         userId: 69d977b8abda6e6ee0cc1f29
+ *     TaskPauseInput:
+ *       type: object
+ *       description: No request body fields are required; the server sets the task updated date automatically
+ *       example: {}
+ *     TaskDeleteInput:
+ *       type: object
+ *       properties:
+ *         achievementProperty:
+ *           type: string
+ *           enum: [busy, waiting]
+ *           description: Explicitly chooses which task-category achievement bucket to decrement before deletion
+ *       example:
+ *         achievementProperty: waiting
  *     TaskCompleteInput:
  *       type: object
  *       properties:
- *         updatedDate:
+ *         finalNotes:
  *           type: string
- *           format: date-time
- *         completed:
- *           type: object
- *           properties:
- *             completedDate:
- *               type: string
- *               format: date-time
- *             finalNotes:
- *               type: string
- *             recur:
- *               type: boolean
+ *           description: Notes captured when the task is completed
+ *         recur:
+ *           type: boolean
+ *           description: When true, the server creates a new recurring task from the completed task
+ *         userId:
+ *           type: string
+ *           description: Optional user ID fallback when the task does not already store one
  *       example:
- *         updatedDate: 2026-10-05T12:30:00.000Z
- *         completed:
- *           completedDate: 2026-10-03T22:00:00.000Z
- *           finalNotes: will do this again!
- *           recur: true
+ *         finalNotes: finished strong
+ *         recur: true
+ *         userId: 69d977b8abda6e6ee0cc1f29
  */
 
 /**
@@ -257,7 +260,7 @@
  * @swagger
  * /api/tasks/startTask/{id}:
  *   put:
- *     summary: Update only the startedDate and updatedDate for a task
+ *     summary: Update the task start dates and sync the related category/user progress state
  *     tags: [Tasks]
  *     parameters:
  *       - in: path
@@ -289,9 +292,41 @@
 
 /**
  * @swagger
+ * /api/tasks/pauseTask/{id}:
+ *   put:
+ *     summary: Pause a task and move the related category progress from busy back to waiting
+ *     tags: [Tasks]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The task ID
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/TaskPauseInput'
+ *     responses:
+ *       200:
+ *         description: Task paused successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Task'
+ *       404:
+ *         description: Task not found
+ *       500:
+ *         description: Server error
+ */
+
+/**
+ * @swagger
  * /api/tasks/completeTask/{id}:
  *   put:
- *     summary: Update only the completed object and updatedDate for a task
+ *     summary: Complete a task, update related user/category progress, and optionally create a recurring follow-up task
  *     tags: [Tasks]
  *     parameters:
  *       - in: path
@@ -325,7 +360,7 @@
  * @swagger
  * /api/tasks/delete/{id}:
  *   delete:
- *     summary: Delete a task by ID
+ *     summary: Delete a task by ID when it has not been completed yet
  *     tags: [Tasks]
  *     parameters:
  *       - in: path
@@ -334,6 +369,12 @@
  *         schema:
  *           type: string
  *         description: The task ID
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/TaskDeleteInput'
  *     responses:
  *       200:
  *         description: Task deleted successfully
@@ -344,6 +385,8 @@
  *               properties:
  *                 message:
  *                   type: string
+ *       400:
+ *         description: Completed tasks cannot be deleted
  *       404:
  *         description: Task not found
  *       500:

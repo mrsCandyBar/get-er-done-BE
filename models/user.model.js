@@ -42,6 +42,20 @@ const achievementBucketSchema = new mongoose.Schema(
   { _id: false }
 );
 
+const achievementSchema = new mongoose.Schema(
+  {
+    completed: {
+      type: achievementBucketSchema,
+      default: () => ({ task: [], fun: [], new: [] }),
+    },
+    recognised: {
+      type: [String],
+      default: [],
+    },
+  },
+  { _id: false }
+);
+
 const userSchema = new mongoose.Schema(
   {
     name: {
@@ -67,11 +81,13 @@ const userSchema = new mongoose.Schema(
       trim: true,
       default: '',
     },
+    aspirations: {
+      type: achievementBucketSchema,
+      default: () => ({ task: [], fun: [], new: [] }),
+    },
     achievements: {
-      completed: {
-        type: achievementBucketSchema,
-        default: () => ({ task: [], fun: [], new: [] }),
-      },
+      type: [achievementSchema],
+      default: [],
     },
     startedDate: {
       type: Date,

@@ -48,11 +48,13 @@ const createCreateHandler = ({
   model,
   buildPayload = (req) => req.body,
   validationErrorStatus = 400,
+  afterCreate = async () => {},
 }) => async (req, res) => {
   try {
     const payload = buildPayload(req);
     const record = new model(payload);
     const saved = await record.save();
+    await afterCreate(saved, req, payload);
     res.status(201).json(saved);
   } catch (err) {
     if (err.name === 'ValidationError') {
@@ -70,6 +72,7 @@ const createUpdateHandler = ({
   notFoundMessage = 'Resource not found',
   validationErrorStatus = 400,
   updateOptions = { new: true, runValidators: true },
+  afterUpdate = async () => {},
   updateRecord = (currentModel, searchParams, update, options) => {
     if (
       searchParams &&
@@ -93,6 +96,7 @@ const createUpdateHandler = ({
       return res.status(404).json({ message: notFoundMessage });
     }
 
+    await afterUpdate(record, req, update);
     res.json(record);
   } catch (err) {
     if (err.name === 'ValidationError') {

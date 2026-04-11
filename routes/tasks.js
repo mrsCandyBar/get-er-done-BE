@@ -6,11 +6,19 @@ const {
   createGetOneHandler,
   createCreateHandler,
   createUpdateHandler,
-  createDeleteHandler,
 } = require('../utils/crudHandlers');
+const {
+  applyTaskCreateEffects,
+  applyTaskStartEffects,
+  applyTaskPauseEffects,
+  applyTaskCompleteEffects,
+  applyTaskDeleteEffects,
+  isTaskCompleted,
+} = require('../utils/taskEffects');
 const {
   buildTaskPayload,
   buildTaskStartPayload,
+  buildTaskPausePayload,
   buildTaskCompletePayload,
 } = require('../payloads/buildTaskPayload');
 
@@ -29,6 +37,7 @@ router.get('/get/:id', createGetOneHandler({
 router.post('/create', createCreateHandler({
   model: Task,
   buildPayload: (req) => buildTaskPayload(req.body, { includeCreatedDate: true }),
+  afterCreate: (savedTask, req) => applyTaskCreateEffects(savedTask, req.body),
 }));
 
 router.put('/update/:id', createUpdateHandler({
@@ -41,7 +50,16 @@ router.put('/update/:id', createUpdateHandler({
 router.put('/startTask/:id', createUpdateHandler({
   model: Task,
   buildSearchParams: (req) => ({ _id: req.params.id }),
-  buildUpdate: (req) => buildTaskStartPayload(req.body),
+  buildUpdate: () => buildTaskStartPayload(),
+  afterUpdate: (savedTask, req) => applyTaskStartEffects(savedTask, req.body),
+  notFoundMessage: 'Task not found',
+}));
+
+router.put('/pauseTask/:id', createUpdateHandler({
+  model: Task,
+  buildSearchParams: (req) => ({ _id: req.params.id }),
+  buildUpdate: () => buildTaskPausePayload(),
+  afterUpdate: (savedTask, req) => applyTaskPauseEffects(savedTask, req.body),
   notFoundMessage: 'Task not found',
 }));
 
@@ -49,14 +67,29 @@ router.put('/completeTask/:id', createUpdateHandler({
   model: Task,
   buildSearchParams: (req) => ({ _id: req.params.id }),
   buildUpdate: (req) => buildTaskCompletePayload(req.body),
+  afterUpdate: (savedTask, req, update) => applyTaskCompleteEffects(savedTask, req.body, update),
   notFoundMessage: 'Task not found',
 }));
 
-router.delete('/delete/:id', createDeleteHandler({
-  model: Task,
-  buildSearchParams: (req) => ({ _id: req.params.id }),
-  notFoundMessage: 'Task not found',
-  successMessage: 'Task deleted successfully',
-}));
+router.delete('/delete/:id', async (req, res) => {
+  try {
+    const task = await Task.findById(req.params.id);
+
+    if (!task) {
+      return res.status(404).json({ message: 'Task not found' });
+    }
+
+    if (isTaskCompleted(task)) {
+      return res.status(400).json({ message: 'Completed tasks cannot be deleted' });
+    }
+
+    await applyTaskDeleteEffects(task, req.body);
+    await Task.findByIdAndDelete(req.params.id);
+
+    res.json({ message: 'Task deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
 
 module.exports = router;

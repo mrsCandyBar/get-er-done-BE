@@ -38,24 +38,45 @@
  *                 type: string
  *         progressUpdatePush:
  *           type: string
- *         achievements:
+ *         aspirations:
  *           type: object
  *           properties:
- *             completed:
- *               type: object
- *               properties:
- *                 task:
- *                   type: array
- *                   items:
- *                     type: string
- *                 fun:
- *                   type: array
- *                   items:
- *                     type: string
- *                 new:
- *                   type: array
- *                   items:
- *                     type: string
+ *             task:
+ *               type: array
+ *               items:
+ *                 type: string
+ *             fun:
+ *               type: array
+ *               items:
+ *                 type: string
+ *             new:
+ *               type: array
+ *               items:
+ *                 type: string
+ *         achievements:
+ *           type: array
+ *           items:
+ *             type: object
+ *             properties:
+ *               completed:
+ *                 type: object
+ *                 properties:
+ *                   task:
+ *                     type: array
+ *                     items:
+ *                       type: string
+ *                   fun:
+ *                     type: array
+ *                     items:
+ *                       type: string
+ *                   new:
+ *                     type: array
+ *                     items:
+ *                       type: string
+ *               recognised:
+ *                 type: array
+ *                 items:
+ *                   type: string
  *         startedDate:
  *           type: string
  *           format: date-time
@@ -63,7 +84,7 @@
  *           type: string
  *           format: date-time
  *       example:
- *         _id: 69d7663ab3f97a842c0947fc
+ *         _id: 69d977b8abda6e6ee0cc1f29
  *         name: Candice Bar
  *         dob: 1987-04-06T22:00:00.000Z
  *         about: I am a developer looking to expand my ideals
@@ -72,11 +93,18 @@
  *             reason: to be more bold!
  *             url: ''
  *         progressUpdatePush: 1 month
+ *         aspirations:
+ *           task: [69d76d7ab3f97a842c094818]
+ *           fun: [69d76d7ab3f97a842c094819]
+ *           new: [69d76d7ab3f97a842c09481a]
  *         achievements:
- *           completed:
- *             task: []
- *             fun: []
- *             new: []
+ *           - completed:
+ *               task: []
+ *               fun: []
+ *               new: []
+ *             recognised:
+ *               - consistency
+ *               - creativity
  *         startedDate: 2026-10-03T22:00:00.000Z
  *         updatedDate: 2026-10-03T22:00:00.000Z
  *     UserInput:
@@ -102,24 +130,45 @@
  *                 type: string
  *         progressUpdatePush:
  *           type: string
- *         achievements:
+ *         aspirations:
  *           type: object
  *           properties:
- *             completed:
- *               type: object
- *               properties:
- *                 task:
- *                   type: array
- *                   items:
- *                     type: string
- *                 fun:
- *                   type: array
- *                   items:
- *                     type: string
- *                 new:
- *                   type: array
- *                   items:
- *                     type: string
+ *             task:
+ *               type: array
+ *               items:
+ *                 type: string
+ *             fun:
+ *               type: array
+ *               items:
+ *                 type: string
+ *             new:
+ *               type: array
+ *               items:
+ *                 type: string
+ *         achievements:
+ *           type: array
+ *           items:
+ *             type: object
+ *             properties:
+ *               completed:
+ *                 type: object
+ *                 properties:
+ *                   task:
+ *                     type: array
+ *                     items:
+ *                       type: string
+ *                   fun:
+ *                     type: array
+ *                     items:
+ *                       type: string
+ *                   new:
+ *                     type: array
+ *                     items:
+ *                       type: string
+ *               recognised:
+ *                 type: array
+ *                 items:
+ *                   type: string
  *         startedDate:
  *           type: string
  *           format: date-time
@@ -135,11 +184,18 @@
  *             reason: to be more bold!
  *             url: ''
  *         progressUpdatePush: 1 month
+ *         aspirations:
+ *           task: [69d76d7ab3f97a842c094818]
+ *           fun: [69d76d7ab3f97a842c094819]
+ *           new: [69d76d7ab3f97a842c09481a]
  *         achievements:
- *           completed:
- *             task: []
- *             fun: []
- *             new: []
+ *           - completed:
+ *               task: []
+ *               fun: []
+ *               new: []
+ *             recognised:
+ *               - consistency
+ *               - creativity
  *         startedDate: 2026-10-03T22:00:00.000Z
  *         updatedDate: 2026-10-03T22:00:00.000Z
  */

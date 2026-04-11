@@ -1,3 +1,36 @@
+const buildTaskIdBucket = (bucket) => {
+  if (!bucket || typeof bucket !== 'object' || Array.isArray(bucket)) {
+    return undefined;
+  }
+
+  return {
+    task: Array.isArray(bucket.task) ? [...bucket.task] : [],
+    fun: Array.isArray(bucket.fun) ? [...bucket.fun] : [],
+    new: Array.isArray(bucket.new) ? [...bucket.new] : [],
+  };
+};
+
+const buildAchievementEntry = (entry = {}) => {
+  if (!entry || typeof entry !== 'object' || Array.isArray(entry)) {
+    return undefined;
+  }
+
+  const achievement = {};
+  const completed = buildTaskIdBucket(entry.completed);
+
+  if (completed) {
+    achievement.completed = completed;
+  }
+
+  if (Array.isArray(entry.recognised)) {
+    achievement.recognised = entry.recognised
+      .filter((item) => item != null && item !== '')
+      .map((item) => String(item));
+  }
+
+  return Object.keys(achievement).length > 0 ? achievement : undefined;
+};
+
 const buildUserPayload = (body = {}) => {
   const payload = {};
 
@@ -25,24 +58,20 @@ const buildUserPayload = (body = {}) => {
     payload.progressUpdatePush = String(body.progressUpdatePush);
   }
 
-  if (body.achievements && typeof body.achievements === 'object') {
-    const achievements = {};
+  const aspirations = buildTaskIdBucket(body.aspirations);
+  if (aspirations) {
+    payload.aspirations = aspirations;
+  }
 
-    if (body.achievements.completed && typeof body.achievements.completed === 'object') {
-      achievements.completed = {
-        task: Array.isArray(body.achievements.completed.task)
-          ? [...body.achievements.completed.task]
-          : [],
-        fun: Array.isArray(body.achievements.completed.fun)
-          ? [...body.achievements.completed.fun]
-          : [],
-        new: Array.isArray(body.achievements.completed.new)
-          ? [...body.achievements.completed.new]
-          : [],
-      };
-    }
+  const achievementEntries = Array.isArray(body.achievements)
+    ? body.achievements.map((entry) => buildAchievementEntry(entry)).filter(Boolean)
+    : (() => {
+      const singleEntry = buildAchievementEntry(body.achievements);
+      return singleEntry ? [singleEntry] : [];
+    })();
 
-    payload.achievements = achievements;
+  if (achievementEntries.length > 0) {
+    payload.achievements = achievementEntries;
   }
 
   if (body.startedDate != null) {

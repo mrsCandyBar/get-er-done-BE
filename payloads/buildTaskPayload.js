@@ -38,8 +38,8 @@ const buildTaskPayload = (
     payload.description = String(body.description);
   }
 
-  if (includeCreatedDate && body.createdDate != null) {
-    payload.createdDate = new Date(body.createdDate);
+  if (includeCreatedDate) {
+    payload.createdDate = new Date();
   }
 
   if (includeStartedDate && body.startedDate != null) {
@@ -64,40 +64,53 @@ const buildTaskPayload = (
     payload.category = categoryId;
   }
 
-  return payload;
-};
-
-const buildTaskStartPayload = (body = {}) => {
-  const payload = {};
-
-  if (body.startedDate != null) {
-    payload.startedDate = new Date(body.startedDate);
-  }
-
-  if (body.updatedDate != null) {
-    payload.updatedDate = new Date(body.updatedDate);
+  const userId = body.userId ?? body.user;
+  if (userId != null && userId !== '') {
+    payload.userId = typeof userId === 'object' ? (userId._id ?? userId.id) : userId;
   }
 
   return payload;
 };
+
+const buildTaskStartPayload = () => {
+  const now = new Date();
+
+  return {
+    startedDate: now,
+    updatedDate: now,
+  };
+};
+
+const buildTaskPausePayload = () => ({
+  updatedDate: new Date(),
+});
 
 const buildTaskCompletePayload = (body = {}) => {
-  const payload = {};
+  const now = new Date();
+  const finalNotes = body.finalNotes ?? body.completed?.finalNotes;
+  const recur = body.recur ?? body.completed?.recur;
 
-  if (body.updatedDate != null) {
-    payload.updatedDate = new Date(body.updatedDate);
+  const completed = {
+    completedDate: now,
+  };
+
+  if (finalNotes != null) {
+    completed.finalNotes = String(finalNotes);
   }
 
-  const completed = buildCompletedPayload(body.completed);
-  if (completed) {
-    payload.completed = completed;
+  if (recur != null) {
+    completed.recur = Boolean(recur);
   }
 
-  return payload;
+  return {
+    updatedDate: now,
+    completed,
+  };
 };
 
 module.exports = {
   buildTaskPayload,
   buildTaskStartPayload,
+  buildTaskPausePayload,
   buildTaskCompletePayload,
 };

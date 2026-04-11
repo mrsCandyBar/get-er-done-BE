@@ -12,17 +12,13 @@ jest.mock('../db/connection', () => ({
 // ── Mock the Task model ───────────────────────────────────────────────────────
 const mockTask = {
   _id: '69d76d7ab3f97a842c094818',
+  userId: '69d7663ab3f97a842c0947fc',
   name: 'Complete Git-er-done',
   description: 'get her off the ground!',
   createdDate: new Date('2026-10-03T22:00:00.000Z').toISOString(),
   startedDate: new Date('2026-10-04T09:00:00.000Z').toISOString(),
   updatedDate: new Date('2026-10-05T12:30:00.000Z').toISOString(),
   recur: [],
-  completed: {
-    completedDate: new Date('2026-10-03T22:00:00.000Z').toISOString(),
-    finalNotes: 'will do this again!',
-    recur: true,
-  },
   category: '69d769a5b3f97a842c094800',
 };
 
@@ -53,23 +49,31 @@ const mockUser = {
     },
   ],
   progressUpdatePush: '1 month',
-  achievements: {
-    completed: {
-      task: [],
-      fun: [],
-      new: [],
-    },
+  aspirations: {
+    task: ['69d76d7ab3f97a842c094818'],
+    fun: ['69d76d7ab3f97a842c094818', '69d76d7ab3f97a842c094819'],
+    new: ['69d76d7ab3f97a842c09481a'],
   },
+  achievements: [
+    {
+      completed: {
+        task: [],
+        fun: [],
+        new: [],
+      },
+      recognised: ['consistency', 'creativity'],
+    },
+  ],
   startedDate: new Date('2026-10-03T22:00:00.000Z').toISOString(),
   updatedDate: new Date('2026-10-03T22:00:00.000Z').toISOString(),
 };
 
 jest.mock('../models/task.model', () => {
   const mockSave = jest.fn().mockResolvedValue(mockTask);
-  function MockTask(data) {
+  const MockTask = jest.fn(function MockTask(data) {
     Object.assign(this, data);
     this.save = mockSave;
-  }
+  });
   MockTask.find = jest.fn(() => ({ sort: jest.fn().mockResolvedValue([mockTask]) }));
   MockTask.findById = jest.fn().mockResolvedValue(mockTask);
   MockTask.findByIdAndUpdate = jest.fn().mockResolvedValue(mockTask);
@@ -97,6 +101,7 @@ jest.mock('../models/user.model', () => {
     this.save = mockSave;
   }
   MockUser.find = jest.fn(() => ({ sort: jest.fn().mockResolvedValue([mockUser]) }));
+  MockUser.findOne = jest.fn().mockResolvedValue(mockUser);
   MockUser.findById = jest.fn().mockResolvedValue(mockUser);
   MockUser.findByIdAndUpdate = jest.fn().mockResolvedValue(mockUser);
   MockUser.findByIdAndDelete = jest.fn().mockResolvedValue(mockUser);
@@ -161,13 +166,16 @@ describe('GET /api/tasks/get/:id', () => {
 });
 
 describe('POST /api/tasks/create', () => {
-  it('returns 201 and the created task', async () => {
+  it('returns 201, creates the task, and updates the user aspiration bucket for the task category', async () => {
+    const requestedCreatedDate = '2026-10-03T22:00:00.000Z';
+
     const res = await request(app)
       .post('/api/tasks/create')
       .send({
+        userId: mockUser._id,
         name: 'Complete Git-er-done',
         description: 'get her off the ground!',
-        createdDate: '2026-10-03T22:00:00.000Z',
+        createdDate: requestedCreatedDate,
         startedDate: '2026-10-04T09:00:00.000Z',
         updatedDate: '2026-10-05T12:30:00.000Z',
         recur: [],
@@ -180,6 +188,56 @@ describe('POST /api/tasks/create', () => {
       });
     expect(res.status).toBe(201);
     expect(res.body.name).toBe(mockTask.name);
+
+    const createdTaskPayload = Task.mock.calls.at(-1)[0];
+    expect(createdTaskPayload.createdDate).toEqual(expect.any(Date));
+    expect(createdTaskPayload.createdDate.toISOString()).not.toBe(requestedCreatedDate);
+    expect(User.findByIdAndUpdate).toHaveBeenCalledWith(
+      mockUser._id,
+      { $addToSet: { 'aspirations.fun': mockTask._id } },
+      { new: true, runValidators: true }
+    );
+    expect(TaskCategory.findByIdAndUpdate).toHaveBeenCalledWith(
+      '69d769a5b3f97a842c094800',
+      {
+        $inc: {
+          count: 1,
+          'achievements.waiting': 1,
+        },
+        $set: {
+          updatedAt: expect.any(Date),
+        },
+      },
+      { new: true, runValidators: true }
+    );
+  });
+
+  it('still updates the user aspiration bucket when the saved task category comes back as an ObjectId-like object', async () => {
+    const originalCategory = mockTask.category;
+    mockTask.category = { id: '69d769a5b3f97a842c094800' };
+
+    User.findByIdAndUpdate.mockClear();
+    TaskCategory.findById.mockClear();
+
+    try {
+      const res = await request(app)
+        .post('/api/tasks/create')
+        .send({
+          userId: mockUser._id,
+          name: 'ObjectId category task',
+          category: '69d769a5b3f97a842c094800',
+        });
+
+      expect(res.status).toBe(201);
+      expect(TaskCategory.findById).toHaveBeenCalledWith('69d769a5b3f97a842c094800');
+      expect(User.findByIdAndUpdate).toHaveBeenCalledWith(
+        mockUser._id,
+        { $addToSet: { 'aspirations.fun': mockTask._id } },
+        { new: true, runValidators: true }
+      );
+    } finally {
+      mockTask.category = originalCategory;
+    }
   });
 });
 
@@ -211,13 +269,20 @@ describe('PUT /api/tasks/update/:id', () => {
 });
 
 describe('PUT /api/tasks/startTask/:id', () => {
-  it('returns 200 and only updates startedDate and updatedDate', async () => {
+  it('returns 200, updates the task dates, updates the task category, and refreshes the user updatedDate', async () => {
+    User.findByIdAndUpdate.mockClear();
+    TaskCategory.findByIdAndUpdate.mockClear();
+
+    const requestedStartedDate = '2026-10-06T08:00:00.000Z';
+    const requestedUpdatedDate = '2026-10-06T08:05:00.000Z';
+
     const res = await request(app)
       .put(`/api/tasks/startTask/${mockTask._id}`)
       .send({
+        userId: mockUser._id,
         name: 'Should be ignored',
-        startedDate: '2026-10-06T08:00:00.000Z',
-        updatedDate: '2026-10-06T08:05:00.000Z',
+        startedDate: requestedStartedDate,
+        updatedDate: requestedUpdatedDate,
       });
 
     expect(res.status).toBe(200);
@@ -228,23 +293,83 @@ describe('PUT /api/tasks/startTask/:id', () => {
       startedDate: expect.any(Date),
       updatedDate: expect.any(Date),
     }));
+    expect(updatePayload.startedDate.toISOString()).not.toBe(requestedStartedDate);
+    expect(updatePayload.updatedDate.toISOString()).not.toBe(requestedUpdatedDate);
     expect(updatePayload.name).toBeUndefined();
     expect(updatePayload.completed).toBeUndefined();
+
+    expect(TaskCategory.findByIdAndUpdate).toHaveBeenCalledWith(
+      '69d769a5b3f97a842c094800',
+      {
+        $inc: {
+          'achievements.busy': 1,
+          'achievements.waiting': -1,
+        },
+        $set: {
+          updatedAt: expect.any(Date),
+        },
+      },
+      { new: true, runValidators: true }
+    );
+
+    expect(User.findByIdAndUpdate).toHaveBeenCalledWith(
+      mockUser._id,
+      {
+        $set: {
+          updatedDate: expect.any(Date),
+        },
+      },
+      { new: true, runValidators: true }
+    );
+  });
+});
+
+describe('PUT /api/tasks/pauseTask/:id', () => {
+  it('returns 200, updates the task updatedDate, and moves the category from busy back to waiting', async () => {
+    TaskCategory.findByIdAndUpdate.mockClear();
+
+    const res = await request(app)
+      .put(`/api/tasks/pauseTask/${mockTask._id}`)
+      .send({
+        userId: mockUser._id,
+      });
+
+    expect(res.status).toBe(200);
+    expect(res.body._id).toBe(mockTask._id);
+
+    const [, updatePayload] = Task.findByIdAndUpdate.mock.calls.at(-1);
+    expect(updatePayload).toEqual({
+      updatedDate: expect.any(Date),
+    });
+
+    expect(TaskCategory.findByIdAndUpdate).toHaveBeenCalledWith(
+      '69d769a5b3f97a842c094800',
+      {
+        $inc: {
+          'achievements.busy': -1,
+          'achievements.waiting': 1,
+        },
+        $set: {
+          updatedAt: expect.any(Date),
+        },
+      },
+      { new: true, runValidators: true }
+    );
   });
 });
 
 describe('PUT /api/tasks/completeTask/:id', () => {
-  it('returns 200 and only updates completed and updatedDate', async () => {
+  it('returns 200, completes the task, updates related records, and creates a new recurring task when requested', async () => {
+    Task.mockClear();
+    Task.findByIdAndUpdate.mockClear();
+    TaskCategory.findByIdAndUpdate.mockClear();
+    User.findByIdAndUpdate.mockClear();
+
     const res = await request(app)
       .put(`/api/tasks/completeTask/${mockTask._id}`)
       .send({
-        name: 'Should be ignored',
-        updatedDate: '2026-10-06T08:05:00.000Z',
-        completed: {
-          completedDate: '2026-10-06T08:00:00.000Z',
-          finalNotes: 'finished strong',
-          recur: false,
-        },
+        finalNotes: 'finished strong',
+        recur: true,
       });
 
     expect(res.status).toBe(200);
@@ -256,23 +381,182 @@ describe('PUT /api/tasks/completeTask/:id', () => {
       completed: expect.objectContaining({
         completedDate: expect.any(Date),
         finalNotes: 'finished strong',
-        recur: false,
+        recur: true,
       }),
     }));
     expect(updatePayload.name).toBeUndefined();
     expect(updatePayload.startedDate).toBeUndefined();
+
+    expect(TaskCategory.findByIdAndUpdate).toHaveBeenCalledWith(
+      mockTask.category,
+      {
+        $inc: {
+          'achievements.busy': -1,
+          'achievements.completed': 1,
+        },
+        $set: {
+          updatedAt: expect.any(Date),
+        },
+      },
+      { new: true, runValidators: true }
+    );
+
+    expect(User.findByIdAndUpdate).toHaveBeenCalledWith(
+      mockTask.userId,
+      {
+        $pull: {
+          'aspirations.fun': mockTask._id,
+        },
+        $addToSet: {
+          'achievements.0.completed.fun': mockTask._id,
+        },
+        $set: {
+          updatedDate: expect.any(Date),
+        },
+      },
+      { new: true, runValidators: true }
+    );
+
+    expect(Task).toHaveBeenCalledTimes(1);
+    const [recurringTaskPayload] = Task.mock.calls.at(-1);
+    expect(recurringTaskPayload).toEqual(expect.objectContaining({
+      name: mockTask.name,
+      description: mockTask.description,
+      category: mockTask.category,
+      userId: mockTask.userId,
+      createdDate: expect.any(Date),
+      recur: [mockTask._id],
+    }));
+    expect(recurringTaskPayload.completed).toBeUndefined();
+    expect(recurringTaskPayload.startedDate).toBeUndefined();
+    expect(recurringTaskPayload.updatedDate).toBeUndefined();
+  });
+
+  it('still adds the completed task to the latest user achievement entry when the task has no stored userId', async () => {
+    const taskWithoutUserId = {
+      ...mockTask,
+      userId: undefined,
+    };
+
+    Task.findByIdAndUpdate.mockResolvedValueOnce(taskWithoutUserId);
+    User.findOne.mockClear();
+    User.findByIdAndUpdate.mockClear();
+
+    const res = await request(app)
+      .put(`/api/tasks/completeTask/${mockTask._id}`)
+      .send({
+        finalNotes: 'fallback user lookup',
+        recur: false,
+      });
+
+    expect(res.status).toBe(200);
+    expect(User.findOne).toHaveBeenCalled();
+    expect(User.findByIdAndUpdate).toHaveBeenCalledWith(
+      mockUser._id,
+      {
+        $pull: {
+          'aspirations.fun': mockTask._id,
+        },
+        $addToSet: {
+          'achievements.0.completed.fun': mockTask._id,
+        },
+        $set: {
+          updatedDate: expect.any(Date),
+        },
+      },
+      { new: true, runValidators: true }
+    );
   });
 });
 
 describe('DELETE /api/tasks/delete/:id', () => {
-  it('returns 200 with success message', async () => {
-    const res = await request(app).delete(`/api/tasks/delete/${mockTask._id}`);
+  it('returns 200, removes the task from the user aspiration list, updates the user, and decrements the started task category counters', async () => {
+    User.findByIdAndUpdate.mockClear();
+    TaskCategory.findByIdAndUpdate.mockClear();
+
+    const res = await request(app)
+      .delete(`/api/tasks/delete/${mockTask._id}`)
+      .send({ achievementProperty: 'busy' });
+
     expect(res.status).toBe(200);
     expect(res.body.message).toBe('Task deleted successfully');
+    expect(User.findByIdAndUpdate).toHaveBeenCalledWith(
+      mockTask.userId,
+      {
+        $pull: { 'aspirations.fun': mockTask._id },
+        $set: { updatedDate: expect.any(Date) },
+      },
+      { new: true, runValidators: true }
+    );
+    expect(TaskCategory.findByIdAndUpdate).toHaveBeenCalledWith(
+      mockTask.category,
+      {
+        $inc: {
+          count: -1,
+          'achievements.busy': -1,
+        },
+        $set: {
+          updatedAt: expect.any(Date),
+        },
+      },
+      { new: true, runValidators: true }
+    );
+    expect(Task.findByIdAndDelete).toHaveBeenCalledWith(mockTask._id);
+  });
+
+  it('decrements waiting when the caller explicitly says the task is currently waiting', async () => {
+    const waitingTask = {
+      ...mockTask,
+      _id: '69d76d7ab3f97a842c09481b',
+      startedDate: new Date('2026-10-04T09:00:00.000Z').toISOString(),
+    };
+
+    Task.findById.mockResolvedValueOnce(waitingTask);
+    Task.findByIdAndDelete.mockResolvedValueOnce(waitingTask);
+    TaskCategory.findByIdAndUpdate.mockClear();
+
+    const res = await request(app)
+      .delete(`/api/tasks/delete/${waitingTask._id}`)
+      .send({ achievementProperty: 'waiting' });
+
+    expect(res.status).toBe(200);
+    expect(TaskCategory.findByIdAndUpdate).toHaveBeenCalledWith(
+      waitingTask.category,
+      {
+        $inc: {
+          count: -1,
+          'achievements.waiting': -1,
+        },
+        $set: {
+          updatedAt: expect.any(Date),
+        },
+      },
+      { new: true, runValidators: true }
+    );
+  });
+
+  it('returns 400 when the task has already been completed', async () => {
+    const completedTask = {
+      ...mockTask,
+      completed: {
+        completedDate: new Date('2026-10-06T08:00:00.000Z').toISOString(),
+        finalNotes: 'all done',
+        recur: false,
+      },
+    };
+
+    Task.findById.mockResolvedValueOnce(completedTask);
+    Task.findByIdAndDelete.mockClear();
+
+    const res = await request(app).delete(`/api/tasks/delete/${mockTask._id}`);
+
+    expect(res.status).toBe(400);
+    expect(res.body.message).toBe('Completed tasks cannot be deleted');
+    expect(Task.findByIdAndDelete).not.toHaveBeenCalled();
   });
 
   it('returns 404 when task is not found', async () => {
-    Task.findByIdAndDelete.mockResolvedValueOnce(null);
+    Task.findById.mockResolvedValueOnce(null);
     const res = await request(app).delete('/api/tasks/delete/000000000000000000000000');
     expect(res.status).toBe(404);
   });
@@ -391,13 +675,21 @@ describe('POST /api/users/create', () => {
           },
         ],
         progressUpdatePush: '1 month',
-        achievements: {
-          completed: {
-            task: [],
-            fun: [],
-            new: [],
-          },
+        aspirations: {
+          task: ['69d76d7ab3f97a842c094818'],
+          fun: ['69d76d7ab3f97a842c094819'],
+          new: ['69d76d7ab3f97a842c09481a'],
         },
+        achievements: [
+          {
+            completed: {
+              task: [],
+              fun: [],
+              new: [],
+            },
+            recognised: ['consistency', 'creativity'],
+          },
+        ],
         startedDate: '2026-10-03T22:00:00.000Z',
         updatedDate: '2026-10-03T22:00:00.000Z',
       });
@@ -413,9 +705,45 @@ describe('PUT /api/users/update/:id', () => {
       .send({
         about: 'Updated about text',
         progressUpdatePush: '2 weeks',
+        aspirations: {
+          task: ['69d76d7ab3f97a842c094818'],
+          fun: ['69d76d7ab3f97a842c094819'],
+          new: ['69d76d7ab3f97a842c09481a'],
+        },
+        achievements: [
+          {
+            completed: {
+              task: ['69d76d7ab3f97a842c094818'],
+              fun: [],
+              new: [],
+            },
+            recognised: ['follow-through', 'kindness'],
+          },
+        ],
       });
     expect(res.status).toBe(200);
     expect(res.body._id).toBe(mockUser._id);
+
+    const [, updatePayload] = User.findByIdAndUpdate.mock.calls.at(-1);
+    expect(updatePayload).toEqual(expect.objectContaining({
+      about: 'Updated about text',
+      progressUpdatePush: '2 weeks',
+      aspirations: {
+        task: ['69d76d7ab3f97a842c094818'],
+        fun: ['69d76d7ab3f97a842c094819'],
+        new: ['69d76d7ab3f97a842c09481a'],
+      },
+      achievements: [
+        {
+          completed: {
+            task: ['69d76d7ab3f97a842c094818'],
+            fun: [],
+            new: [],
+          },
+          recognised: ['follow-through', 'kindness'],
+        },
+      ],
+    }));
   });
 
   it('returns 404 when user is not found', async () => {
