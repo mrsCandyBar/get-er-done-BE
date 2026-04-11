@@ -196,6 +196,7 @@ app.get('/', (req, res) => {
       <tr><td>GET</td>    <td><code>/api/users/getAll</code></td>              <td>Retrieve all users</td></tr>
       <tr><td>GET</td>    <td><code>/api/users/get/:id</code></td>             <td>Retrieve a single user</td></tr>
       <tr><td>POST</td>   <td><code>/api/users/create</code></td>              <td>Create a user</td></tr>
+      <tr><td>POST</td>   <td><code>/api/users/login/google</code></td>        <td>Verify a Google Sign-In token and log in or create a user</td></tr>
       <tr><td>PUT</td>    <td><code>/api/users/update/:id</code></td>          <td>Update a user</td></tr>
       <tr><td>DELETE</td> <td><code>/api/users/delete/:id</code></td>          <td>Delete a user</td></tr>
     </tbody>

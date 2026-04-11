@@ -63,6 +63,27 @@ const userSchema = new mongoose.Schema(
       trim: true,
       default: '',
     },
+    email: {
+      type: String,
+      trim: true,
+      lowercase: true,
+      default: '',
+    },
+    googleId: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    profilePicture: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    authProvider: {
+      type: String,
+      trim: true,
+      default: '',
+    },
     dob: {
       type: Date,
       default: null,
@@ -96,6 +117,10 @@ const userSchema = new mongoose.Schema(
     updatedDate: {
       type: Date,
       default: Date.now,
+    },
+    lastLoginDate: {
+      type: Date,
+      default: null,
     },
   },
   {

@@ -20,6 +20,15 @@
  *           type: string
  *         name:
  *           type: string
+ *         email:
+ *           type: string
+ *           format: email
+ *         googleId:
+ *           type: string
+ *         profilePicture:
+ *           type: string
+ *         authProvider:
+ *           type: string
  *         dob:
  *           type: string
  *           format: date-time
@@ -83,9 +92,16 @@
  *         updatedDate:
  *           type: string
  *           format: date-time
+ *         lastLoginDate:
+ *           type: string
+ *           format: date-time
  *       example:
  *         _id: 69d977b8abda6e6ee0cc1f29
  *         name: Candice Bar
+ *         email: candice@example.com
+ *         googleId: google-user-123
+ *         profilePicture: https://example.com/avatar.png
+ *         authProvider: google
  *         dob: 1987-04-06T22:00:00.000Z
  *         about: I am a developer looking to expand my ideals
  *         inspirations:
@@ -112,6 +128,15 @@
  *       properties:
  *         name:
  *           type: string
+ *         email:
+ *           type: string
+ *           format: email
+ *         googleId:
+ *           type: string
+ *         profilePicture:
+ *           type: string
+ *         authProvider:
+ *           type: string
  *         dob:
  *           type: string
  *           format: date-time
@@ -175,8 +200,15 @@
  *         updatedDate:
  *           type: string
  *           format: date-time
+ *         lastLoginDate:
+ *           type: string
+ *           format: date-time
  *       example:
  *         name: Candice Bar
+ *         email: candice@example.com
+ *         googleId: google-user-123
+ *         profilePicture: https://example.com/avatar.png
+ *         authProvider: google
  *         dob: 1987-04-06T22:00:00.000Z
  *         about: I am a developer looking to expand my ideals
  *         inspirations:
@@ -280,6 +312,35 @@
  *         description: User updated successfully
  *       404:
  *         description: User not found
+ */
+
+/**
+ * @swagger
+ * /api/users/login/google:
+ *   post:
+ *     summary: Log in with Google Sign-In
+ *     tags: [Users]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - idToken
+ *             properties:
+ *               idToken:
+ *                 type: string
+ *                 description: Google ID token returned by the frontend sign-in flow
+ *     responses:
+ *       200:
+ *         description: Existing user logged in successfully
+ *       201:
+ *         description: New user created from Google profile and logged in successfully
+ *       400:
+ *         description: Missing Google token
+ *       401:
+ *         description: Invalid or unverified Google token
  */
 
 /**
