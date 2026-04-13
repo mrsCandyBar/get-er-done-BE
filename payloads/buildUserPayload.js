@@ -4,7 +4,7 @@ const buildTaskIdBucket = (bucket) => {
   }
 
   return {
-    task: Array.isArray(bucket.task) ? [...bucket.task] : [],
+    quest: Array.isArray(bucket.quest) ? [...bucket.quest] : [],
     fun: Array.isArray(bucket.fun) ? [...bucket.fun] : [],
     new: Array.isArray(bucket.new) ? [...bucket.new] : [],
   };

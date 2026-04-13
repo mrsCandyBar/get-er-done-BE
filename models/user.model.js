@@ -46,7 +46,7 @@ const achievementSchema = new mongoose.Schema(
   {
     completed: {
       type: achievementBucketSchema,
-      default: () => ({ task: [], fun: [], new: [] }),
+      default: () => ({ quest: [], fun: [], new: [] }),
     },
     recognised: {
       type: [String],
@@ -104,7 +104,7 @@ const userSchema = new mongoose.Schema(
     },
     aspirations: {
       type: achievementBucketSchema,
-      default: () => ({ task: [], fun: [], new: [] }),
+      default: () => ({ quest: [], fun: [], new: [] }),
     },
     achievements: {
       type: [achievementSchema],
