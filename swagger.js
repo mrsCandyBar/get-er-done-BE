@@ -20,7 +20,7 @@ const options = {
         description: 'Local development server',
         variables: {
           port: {
-            default: process.env.PORT || '3000',
+            default: process.env.PORT || '8080',
           },
         },
       },

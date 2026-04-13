@@ -8,14 +8,14 @@ npm install
 npm run dev
 ```
 
-The API runs on `http://localhost:3000` by default.
+The API runs on `http://localhost:8080` by default.
 
 ## Environment variables
 
 Create a `.env` file with values like:
 
 ```env
-PORT=3000
+PORT=8080
 MONGODB_URI_DEV=mongodb://localhost:27017/_git-er-done
 GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
 ```
@@ -60,7 +60,7 @@ export default function GoogleLoginButton() {
     const idToken = response.credential;
 
     try {
-      const res = await fetch('http://localhost:3000/api/users/login/google', {
+      const res = await fetch('http://localhost:8080/api/users/login/google', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -112,7 +112,7 @@ export default function GoogleLoginButton() {
     const idToken = response.credential;
 
     try {
-      const res = await fetch('http://localhost:3000/api/users/login/google', {
+      const res = await fetch('http://localhost:8080/api/users/login/google', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ idToken }),
