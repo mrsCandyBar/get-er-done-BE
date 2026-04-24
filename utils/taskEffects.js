@@ -238,6 +238,34 @@ const applyTaskCompleteEffects = async (savedTask, body = {}, update = {}) => {
   const { userId, user } = await findAssociatedUser(savedTask, body, categoryKey);
   const now = new Date();
 
+  // Update completedAt for the previous achievement and set createdAt for the new one
+  if (userId && user && Array.isArray(user.achievements)) {
+    const achievements = user.achievements;
+    const prevIndex = achievements.length - 1;
+    if (prevIndex >= 0) {
+      await User.findByIdAndUpdate(
+        userId,
+        {
+          $set: {
+            [`achievements.${prevIndex}.completedAt`]: now,
+          },
+        },
+        { new: true, runValidators: true }
+      );
+    }
+    // When a new achievement is added, set createdAt
+    const newIndex = achievements.length;
+    await User.findByIdAndUpdate(
+      userId,
+      {
+        $set: {
+          [`achievements.${newIndex}.createdAt`]: now,
+        },
+      },
+      { new: true, runValidators: true }
+    );
+  }
+
   await updateTaskCategoryProgress(
     categoryId,
     {

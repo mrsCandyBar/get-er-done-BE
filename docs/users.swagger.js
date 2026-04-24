@@ -82,6 +82,12 @@
  *                     type: array
  *                     items:
  *                       type: string
+ *               createdAt:
+ *                 type: string
+ *                 format: date-time
+ *               completedAt:
+ *                 type: string
+ *                 format: date-time
  *               recognised:
  *                 type: array
  *                 items:
@@ -121,6 +127,8 @@
  *             recognised:
  *               - consistency
  *               - creativity
+ *             createdAt: 2026-10-03T22:00:00.000Z
+ *             completedAt: 2026-10-04T22:00:00.000Z
  *         startedDate: 2026-10-03T22:00:00.000Z
  *         updatedDate: 2026-10-03T22:00:00.000Z
  *     UserInput:

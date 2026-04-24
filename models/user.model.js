@@ -52,6 +52,8 @@ const achievementSchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
+    createdAt: Date,
+    completedAt: Date,
   },
   { _id: false }
 );

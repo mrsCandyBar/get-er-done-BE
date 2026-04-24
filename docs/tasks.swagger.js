@@ -41,15 +41,19 @@
  *           items:
  *             type: string
  *         completed:
- *           type: object
- *           properties:
- *             completedDate:
- *               type: string
- *               format: date-time
- *             finalNotes:
- *               type: string
- *             recur:
- *               type: boolean
+*           type: object
+*           properties:
+*             mood:
+*               type: string
+*               description: Mood after completing the task
+*               enum: [happy, love, not-sure, confused, not-for-me]
+*             completedDate:
+*               type: string
+*               format: date-time
+*             finalNotes:
+*               type: string
+*             recur:
+*               type: boolean
  *         category:
  *           type: string
  *           description: Related task category ID
@@ -62,9 +66,10 @@
  *         updatedDate: 2026-10-05T12:30:00.000Z
  *         recur: []
  *         completed:
- *           completedDate: 2026-10-03T22:00:00.000Z
- *           finalNotes: will do this again!
- *           recur: true
+*           mood: happy
+*           completedDate: 2026-10-03T22:00:00.000Z
+*           finalNotes: will do this again!
+*           recur: true
  *         category: 69d769a5b3f97a842c094800
  *     TaskInput:
  *       type: object

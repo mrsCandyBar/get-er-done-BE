@@ -2,6 +2,11 @@ const mongoose = require('mongoose');
 
 const completedSchema = new mongoose.Schema(
   {
+    mood: {
+      type: String,
+      trim: true,
+      default: '',
+    },
     completedDate: {
       type: Date,
       default: null,
