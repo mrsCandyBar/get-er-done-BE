@@ -48,9 +48,10 @@ const taskSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
-    recur: {
-      type: [mongoose.Schema.Types.Mixed],
-      default: [],
+    recurId: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: 'RecurringTask',
+      default: null,
     },
     completed: {
       type: completedSchema,

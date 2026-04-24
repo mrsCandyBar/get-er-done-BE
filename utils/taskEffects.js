@@ -243,27 +243,23 @@ const applyTaskCompleteEffects = async (savedTask, body = {}, update = {}) => {
     const achievements = user.achievements;
     const prevIndex = achievements.length - 1;
     if (prevIndex >= 0) {
+      const latestAchievement = achievements[prevIndex] || {};
+      const updatedCompleted = {
+        ...latestAchievement.completed,
+        ...(update?.completed || {}),
+        ...(body.completed || {}),
+      };
       await User.findByIdAndUpdate(
         userId,
         {
           $set: {
+            [`achievements.${prevIndex}.completed`]: updatedCompleted,
             [`achievements.${prevIndex}.completedAt`]: now,
           },
         },
         { new: true, runValidators: true }
       );
     }
-    // When a new achievement is added, set createdAt
-    const newIndex = achievements.length;
-    await User.findByIdAndUpdate(
-      userId,
-      {
-        $set: {
-          [`achievements.${newIndex}.createdAt`]: now,
-        },
-      },
-      { new: true, runValidators: true }
-    );
   }
 
   await updateTaskCategoryProgress(
@@ -312,29 +308,92 @@ const applyTaskCompleteEffects = async (savedTask, body = {}, update = {}) => {
   }
 
   const shouldRecur = Boolean(update?.completed?.recur ?? body.recur ?? body.completed?.recur);
+  const RecurringTask = require('../models/recurringTask.model');
+  const TaskModel = require('../models/task.model');
+  let recurId = Array.isArray(savedTask.recurId) && savedTask.recurId.length > 0 ? savedTask.recurId[0] : null;
 
   if (shouldRecur) {
-    const sourceTask = savedTask?.toObject ? savedTask.toObject() : { ...savedTask };
-    const recurringPayload = buildTaskPayload(
-      {
-        ...sourceTask,
-        recur: addTaskId(sourceTask.recur, savedTask._id),
-        completed: undefined,
-      },
-      {
-        includeCreatedDate: true,
-        includeStartedDate: false,
-        includeUpdatedDate: false,
+    if (recurId) {
+      // Existing recurId logic
+      const recurringTaskDoc = await RecurringTask.findById(recurId);
+      if (recurringTaskDoc) {
+        // Create a new task with same properties
+        const sourceTask = savedTask?.toObject ? savedTask.toObject() : { ...savedTask };
+        const recurringPayload = buildTaskPayload(
+          {
+            name: sourceTask.name,
+            description: sourceTask.description,
+            recurId: [recurId],
+            category: sourceTask.category,
+            userId: sourceTask.userId,
+            completed: undefined,
+          },
+          {
+            includeCreatedDate: true,
+            includeStartedDate: false,
+            includeUpdatedDate: false,
+          }
+        );
+        delete recurringPayload.completed;
+        delete recurringPayload.startedDate;
+        delete recurringPayload.updatedDate;
+        const newTask = new TaskModel(recurringPayload);
+        const savedNewTask = await newTask.save();
+        // Add new taskId to recurringTaskDoc.taskIds and update updatedDate
+        recurringTaskDoc.taskIds.push(savedNewTask._id);
+        recurringTaskDoc.updatedDate = new Date();
+        await recurringTaskDoc.save();
+        await applyTaskCreateEffects(savedNewTask, recurringPayload);
       }
-    );
-
-    delete recurringPayload.completed;
-    delete recurringPayload.startedDate;
-    delete recurringPayload.updatedDate;
-
-    const recurringTask = new Task(recurringPayload);
-    const savedRecurringTask = await recurringTask.save();
-    await applyTaskCreateEffects(savedRecurringTask, recurringPayload);
+    } else {
+      // No recurId: create RecurringTask, update completedTask, create new task, update RecurringTask
+      const sourceTask = savedTask?.toObject ? savedTask.toObject() : { ...savedTask };
+      const newRecurringTask = new RecurringTask({
+        name: sourceTask.name,
+        description: sourceTask.description,
+        userId: sourceTask.userId,
+        taskIds: [sourceTask._id],
+        isActive: true,
+      });
+      const savedRecurringTask = await newRecurringTask.save();
+      recurId = savedRecurringTask._id;
+      // Update completedTask with recurId
+      await TaskModel.findByIdAndUpdate(sourceTask._id, { recurId: [recurId] });
+      // Create a new task with same properties
+      const recurringPayload = buildTaskPayload(
+        {
+          name: sourceTask.name,
+          description: sourceTask.description,
+          recurId: [recurId],
+          category: sourceTask.category,
+          userId: sourceTask.userId,
+          completed: undefined,
+        },
+        {
+          includeCreatedDate: true,
+          includeStartedDate: false,
+          includeUpdatedDate: false,
+        }
+      );
+      delete recurringPayload.completed;
+      delete recurringPayload.startedDate;
+      delete recurringPayload.updatedDate;
+      const newTask = new TaskModel(recurringPayload);
+      const savedNewTask = await newTask.save();
+      // Add new taskId to recurringTask.taskIds and update updatedDate
+      savedRecurringTask.taskIds.push(savedNewTask._id);
+      savedRecurringTask.updatedDate = new Date();
+      await savedRecurringTask.save();
+      await applyTaskCreateEffects(savedNewTask, recurringPayload);
+    }
+  } else if (recurId) {
+    // recur is false, set isActive to false and update updatedDate
+    const recurringTaskDoc = await RecurringTask.findById(recurId);
+    if (recurringTaskDoc) {
+      recurringTaskDoc.isActive = false;
+      recurringTaskDoc.updatedDate = new Date();
+      await recurringTaskDoc.save();
+    }
   }
 };
 

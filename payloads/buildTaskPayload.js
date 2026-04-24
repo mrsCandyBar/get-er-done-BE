@@ -17,6 +17,10 @@ const buildCompletedPayload = (completedBody) => {
     completed.recur = Boolean(completedBody.recur);
   }
 
+  if (completedBody.mood != null) {
+    completed.mood = String(completedBody.mood);
+  }
+
   return completed;
 };
 
@@ -91,7 +95,8 @@ const buildTaskCompletePayload = (body = {}) => {
   const recur = body.recur ?? body.completed?.recur;
 
   const completed = {
-    completedDate: now,
+      completedDate: now,
+      mood: body.mood ?? body.completed?.mood,
   };
 
   if (finalNotes != null) {

@@ -7,6 +7,7 @@ const db = require('./db/connection');
 const tasksRouter = require('./routes/tasks');
 const taskCategoriesRouter = require('./routes/taskCategories');
 const usersRouter = require('./routes/users');
+const recurringTasksRouter = require('./routes/recurringTasks');
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -250,6 +251,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
 app.use('/api/tasks', tasksRouter);
 app.use('/api/task-categories', taskCategoriesRouter);
 app.use('/api/users', usersRouter);
+app.use('/api/recurring-tasks', recurringTasksRouter);
 
 // ── Start (only when run directly, not when required by tests) ────────────────
 if (require.main === module) {

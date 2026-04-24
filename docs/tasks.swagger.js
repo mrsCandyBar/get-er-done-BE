@@ -40,6 +40,11 @@
  *           type: array
  *           items:
  *             type: string
+*         recurId:
+*           type: array
+*           items:
+*             type: string
+*           description: Array of RecurringTask IDs this task is associated with
  *         completed:
 *           type: object
 *           properties:
@@ -65,6 +70,7 @@
  *         startedDate: 2026-10-04T09:00:00.000Z
  *         updatedDate: 2026-10-05T12:30:00.000Z
  *         recur: []
+*         recurId: [6628e7b2c1a4e2a1b8c1d2e3]
  *         completed:
 *           mood: happy
 *           completedDate: 2026-10-03T22:00:00.000Z
@@ -90,6 +96,11 @@
  *           type: array
  *           items:
  *             type: string
+*         recurId:
+*           type: array
+*           items:
+*             type: string
+*           description: Array of RecurringTask IDs this task is associated with
  *         completed:
  *           type: object
  *           properties:
@@ -112,6 +123,7 @@
  *         startedDate: 2026-10-04T09:00:00.000Z
  *         updatedDate: 2026-10-05T12:30:00.000Z
  *         recur: []
+*         recurId: [6628e7b2c1a4e2a1b8c1d2e3]
  *         completed:
  *           completedDate: 2026-10-03T22:00:00.000Z
  *           finalNotes: will do this again!
