@@ -5,7 +5,7 @@
 /**
  * @swagger
  * tags:
- *   - name: RecurringTasks
+ *   - name: Recurring Tasks
  *     description: Recurring task management endpoints
  */
 
@@ -66,7 +66,7 @@
  * @swagger
  * /api/recurring-tasks/getAll:
  *   get:
- *     tags: [RecurringTasks]
+ *     tags: [Recurring Tasks]
  *     summary: Get all recurring tasks
  *     responses:
  *       200:
@@ -80,7 +80,7 @@
  *
  * /api/recurring-tasks/get/{id}:
  *   get:
- *     tags: [RecurringTasks]
+ *     tags: [Recurring Tasks]
  *     summary: Get a recurring task by ID
  *     parameters:
  *       - in: path
@@ -100,7 +100,7 @@
  *
  * /api/recurring-tasks/create:
  *   post:
- *     tags: [RecurringTasks]
+ *     tags: [Recurring Tasks]
  *     summary: Create a new recurring task
  *     requestBody:
  *       required: true
@@ -118,7 +118,7 @@
  *
  * /api/recurring-tasks/update/{id}:
  *   put:
- *     tags: [RecurringTasks]
+ *     tags: [Recurring Tasks]
  *     summary: Update a recurring task by ID
  *     parameters:
  *       - in: path
@@ -144,7 +144,7 @@
  *
  * /api/recurring-tasks/delete/{id}:
  *   delete:
- *     tags: [RecurringTasks]
+ *     tags: [Recurring Tasks]
  *     summary: Delete a recurring task by ID
  *     parameters:
  *       - in: path
