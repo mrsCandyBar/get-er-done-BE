@@ -24,7 +24,14 @@ const {
 
 router.get('/getAll', createGetAllHandler({
   model: Task,
-  buildSearchParams: () => ({}),
+  buildSearchParams: (req) => {
+    const { name, recurId, userId } = req.query;
+    const search = {};
+    if (name) search.name = { $regex: name, $options: 'i' };
+    if (recurId) search.recurId = recurId;
+    if (userId) search.userId = userId;
+    return search;
+  },
   sort: { createdDate: -1 },
 }));
 
@@ -47,7 +54,7 @@ router.put('/update/:id', createUpdateHandler({
   notFoundMessage: 'Task not found',
 }));
 
-router.put('/startTask/:id', createUpdateHandler({
+router.put('/start/:id', createUpdateHandler({
   model: Task,
   buildSearchParams: (req) => ({ _id: req.params.id }),
   buildUpdate: () => buildTaskStartPayload(),
@@ -55,7 +62,7 @@ router.put('/startTask/:id', createUpdateHandler({
   notFoundMessage: 'Task not found',
 }));
 
-router.put('/pauseTask/:id', createUpdateHandler({
+router.put('/pause/:id', createUpdateHandler({
   model: Task,
   buildSearchParams: (req) => ({ _id: req.params.id }),
   buildUpdate: () => buildTaskPausePayload(),
@@ -63,7 +70,7 @@ router.put('/pauseTask/:id', createUpdateHandler({
   notFoundMessage: 'Task not found',
 }));
 
-router.put('/completeTask/:id', createUpdateHandler({
+router.put('/complete/:id', createUpdateHandler({
   model: Task,
   buildSearchParams: (req) => ({ _id: req.params.id }),
   buildUpdate: (req) => buildTaskCompletePayload(req.body),

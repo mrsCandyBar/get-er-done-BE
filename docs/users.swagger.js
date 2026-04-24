@@ -220,7 +220,7 @@
 
 /**
  * @swagger
- * /api/users/add-recognised-achievements/{userId}/{achievementIndex}:
+* /api/users/achievement/{userId}/{achievementIndex}:
  *   patch:
  *     summary: Add achievements to a user's achievements.recognised array
  *     tags: [Users]

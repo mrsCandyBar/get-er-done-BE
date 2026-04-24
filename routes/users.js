@@ -150,7 +150,7 @@ router.delete('/delete/:id', createDeleteHandler({
 module.exports = router;
 
 // Add achievements to a user's achievements.recognised array
-router.patch('/add-recognised-achievements/:userId/:achievementIndex', async (req, res) => {
+router.patch('/achievement/:userId/:achievementIndex', async (req, res) => {
   const { achievementIds } = req.body; // expects array of achievement ObjectIds
   const { userId, achievementIndex } = req.params;
   if (!Array.isArray(achievementIds) || !achievementIds.length) {

@@ -11,7 +11,13 @@ const {
 
 router.get('/getAll', createGetAllHandler({
   model: RecurringTask,
-  buildSearchParams: () => ({}),
+  buildSearchParams: (req) => {
+    const { name, userId } = req.query;
+    const search = {};
+    if (name) search.name = { $regex: name, $options: 'i' };
+    if (userId) search.userId = userId;
+    return search;
+  },
   sort: { createdDate: -1 },
 }));
 
