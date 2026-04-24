@@ -45,6 +45,10 @@
  *                 type: string
  *               url:
  *                 type: string
+ *         status:
+ *           type: string
+ *           description: User status
+ *           enum: [friend, friend-new, friend-dear, friend-close, confidant]
  *         progressUpdatePush:
  *           type: string
  *         aspirations:
@@ -62,36 +66,6 @@
  *               type: array
  *               items:
  *                 type: string
- *         achievements:
- *           type: array
- *           items:
- *             type: object
- *             properties:
- *               completed:
- *                 type: object
- *                 properties:
- *                   task:
- *                     type: array
- *                     items:
- *                       type: string
- *                   fun:
- *                     type: array
- *                     items:
- *                       type: string
- *                   new:
- *                     type: array
- *                     items:
- *                       type: string
- *               createdAt:
- *                 type: string
- *                 format: date-time
- *               completedAt:
- *                 type: string
- *                 format: date-time
- *               recognised:
- *                 type: array
- *                 items:
- *                   type: string
  *         startedDate:
  *           type: string
  *           format: date-time
@@ -161,6 +135,10 @@
  *                 type: string
  *               url:
  *                 type: string
+ *         status:
+ *           type: string
+ *           description: User status
+ *           enum: [friend, friend-new, friend-dear, friend-close, confidant]
  *         progressUpdatePush:
  *           type: string
  *         aspirations:
@@ -238,6 +216,79 @@
  *               - creativity
  *         startedDate: 2026-10-03T22:00:00.000Z
  *         updatedDate: 2026-10-03T22:00:00.000Z
+ */
+
+/**
+ * @swagger
+ * /api/users/add-recognised-achievements/{userId}/{achievementIndex}:
+ *   patch:
+ *     summary: Add achievements to a user's achievements.recognised array
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: achievementIndex
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - achievementIds
+ *             properties:
+ *               achievementIds:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   description: Achievement ObjectId
+ *     responses:
+ *       200:
+ *         description: Achievements added to recognised
+ *       400:
+ *         description: achievementIds missing or invalid
+ *       404:
+ *         description: User or achievement entry not found
+ */
+
+/**
+ * @swagger
+ * /api/users/update-status/{id}:
+ *   patch:
+ *     summary: Update only the user's status
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - status
+ *             properties:
+ *               status:
+ *                 type: string
+ *                 enum: [friend, friend-new, friend-dear, friend-close, confidant]
+ *     responses:
+ *       200:
+ *         description: Status updated successfully
+ *       400:
+ *         description: Invalid status value
+ *       404:
+ *         description: User not found
  */
 
 /**

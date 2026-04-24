@@ -102,6 +102,10 @@ const buildUserPayload = (body = {}) => {
     payload.lastLoginDate = new Date(body.lastLoginDate);
   }
 
+  if (body.status != null) {
+    payload.status = String(body.status);
+  }
+
   return payload;
 };
 

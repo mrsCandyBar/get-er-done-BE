@@ -8,6 +8,7 @@ const tasksRouter = require('./routes/tasks');
 const taskCategoriesRouter = require('./routes/taskCategories');
 const usersRouter = require('./routes/users');
 const recurringTasksRouter = require('./routes/recurringTasks');
+const achievementsRouter = require('./routes/achievements');
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -252,6 +253,7 @@ app.use('/api/tasks', tasksRouter);
 app.use('/api/task-categories', taskCategoriesRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/recurring-tasks', recurringTasksRouter);
+app.use('/api/achievements', achievementsRouter);
 
 // ── Start (only when run directly, not when required by tests) ────────────────
 if (require.main === module) {

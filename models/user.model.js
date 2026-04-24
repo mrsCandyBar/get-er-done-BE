@@ -49,7 +49,8 @@ const achievementSchema = new mongoose.Schema(
       default: () => ({ quest: [], fun: [], new: [] }),
     },
     recognised: {
-      type: [String],
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: 'Achievement',
       default: [],
     },
     createdAt: Date,
@@ -123,6 +124,12 @@ const userSchema = new mongoose.Schema(
     lastLoginDate: {
       type: Date,
       default: null,
+    },
+    status: {
+      type: String,
+      enum: ['friend', 'friend-new', 'friend-dear', 'friend-close', 'confidant'],
+      default: 'friend',
+      trim: true,
     },
   },
   {
