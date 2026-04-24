@@ -310,7 +310,7 @@ const applyTaskCompleteEffects = async (savedTask, body = {}, update = {}) => {
   const shouldRecur = Boolean(update?.completed?.recur ?? body.recur ?? body.completed?.recur);
   const RecurringTask = require('../models/recurringTask.model');
   const TaskModel = require('../models/task.model');
-  let recurId = Array.isArray(savedTask.recurId) && savedTask.recurId.length > 0 ? savedTask.recurId[0] : null;
+  let recurId = savedTask.recurId || null;
 
   if (shouldRecur) {
     if (recurId) {
@@ -323,10 +323,11 @@ const applyTaskCompleteEffects = async (savedTask, body = {}, update = {}) => {
           {
             name: sourceTask.name,
             description: sourceTask.description,
-            recurId: [recurId],
+            recurId: recurId,
             category: sourceTask.category,
             userId: sourceTask.userId,
             completed: undefined,
+            state: 'waiting',
           },
           {
             includeCreatedDate: true,
@@ -358,16 +359,17 @@ const applyTaskCompleteEffects = async (savedTask, body = {}, update = {}) => {
       const savedRecurringTask = await newRecurringTask.save();
       recurId = savedRecurringTask._id;
       // Update completedTask with recurId
-      await TaskModel.findByIdAndUpdate(sourceTask._id, { recurId: [recurId] });
+      await TaskModel.findByIdAndUpdate(sourceTask._id, { recurId: recurId });
       // Create a new task with same properties
       const recurringPayload = buildTaskPayload(
         {
           name: sourceTask.name,
           description: sourceTask.description,
-          recurId: [recurId],
+          recurId: recurId,
           category: sourceTask.category,
           userId: sourceTask.userId,
           completed: undefined,
+          state: 'waiting',
         },
         {
           includeCreatedDate: true,

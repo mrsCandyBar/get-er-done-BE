@@ -68,9 +68,20 @@ const buildTaskPayload = (
     payload.category = categoryId;
   }
 
+  if (body.recurId != null && body.recurId !== '') {
+    payload.recurId = body.recurId;
+  }
+
   const userId = body.userId ?? body.user;
   if (userId != null && userId !== '') {
     payload.userId = typeof userId === 'object' ? (userId._id ?? userId.id) : userId;
+  }
+
+  // Set state if provided, otherwise default to 'waiting' on create
+  if (body.state) {
+    payload.state = body.state;
+  } else {
+    payload.state = 'waiting';
   }
 
   return payload;
@@ -78,10 +89,10 @@ const buildTaskPayload = (
 
 const buildTaskStartPayload = () => {
   const now = new Date();
-
   return {
     startedDate: now,
     updatedDate: now,
+    state: 'busy',
   };
 };
 
@@ -110,6 +121,7 @@ const buildTaskCompletePayload = (body = {}) => {
   return {
     updatedDate: now,
     completed,
+    state: 'complete',
   };
 };
 

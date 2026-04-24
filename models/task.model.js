@@ -49,9 +49,14 @@ const taskSchema = new mongoose.Schema(
       default: null,
     },
     recurId: {
-      type: [mongoose.Schema.Types.ObjectId],
+      type: mongoose.Schema.Types.ObjectId,
       ref: 'RecurringTask',
       default: null,
+    },
+    state: {
+      type: String,
+      enum: ['waiting', 'busy', 'complete'],
+      default: 'waiting',
     },
     completed: {
       type: completedSchema,
