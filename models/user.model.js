@@ -101,9 +101,27 @@ const userSchema = new mongoose.Schema(
       default: [],
     },
     progressUpdatePush: {
-      type: String,
-      trim: true,
-      default: '',
+      schedule: {
+        type: String,
+        enum: ['daily', 'weekly', 'monthly'],
+        default: 'daily',
+        trim: true,
+      },
+      lastUpdatedDate: {
+        type: String,
+        default: '',
+        trim: true,
+      },
+      lastUpdateSent: {
+        type: String,
+        default: '',
+        trim: true,
+      },
+      updatedDate: {
+        type: String,
+        default: '',
+        trim: true,
+      },
     },
     aspirations: {
       type: achievementBucketSchema,

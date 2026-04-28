@@ -16,6 +16,11 @@ const completedSchema = new mongoose.Schema(
       trim: true,
       default: '',
     },
+    keepsakeUrl: {
+      type: String,
+      trim: true,
+      default: '',
+    },
     recur: {
       type: Boolean,
       default: false,
