@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/user.model');
+const mongoose = require('mongoose');
 const {
   createGetAllHandler,
   createGetOneHandler,
@@ -8,7 +9,10 @@ const {
   createUpdateHandler,
   createDeleteHandler,
 } = require('../utils/crudHandlers');
+
 const { buildUserPayload } = require('../payloads/buildUserPayload');
+const { signUserToken } = require('../utils/jwt');
+const authMiddleware = require('../utils/authMiddleware');
 
 const verifyGoogleIdToken = async (idToken) => {
   if (typeof globalThis.fetch !== 'function') {
@@ -63,6 +67,10 @@ const buildGoogleUserProfile = (googlePayload = {}) => {
   };
 };
 
+
+// Protect all routes below
+router.use(authMiddleware);
+
 router.get('/getAll', createGetAllHandler({
   model: User,
   buildSearchParams: () => ({}),
@@ -71,8 +79,11 @@ router.get('/getAll', createGetAllHandler({
 
 router.get('/get/:id', createGetOneHandler({
   model: User,
-  buildSearchParams: (req) => ({ _id: req.params.id }),
-  notFoundMessage: 'User not found',
+  buildSearchParams: (req) => {
+    let id = req.params.id;
+    return { _id: (id === 'me') ? req.userId : id };
+  },
+  notFoundMessage: 'User not found'
 }));
 
 router.post('/create', createCreateHandler({
@@ -97,36 +108,35 @@ router.post('/login/google', async (req, res) => {
       ],
     });
 
+    let user, isNewUser = false;
     if (existingUser) {
-      const updatedUser = await User.findByIdAndUpdate(
+      user = await User.findByIdAndUpdate(
         existingUser._id,
         userProfile,
         { new: true, runValidators: true }
       );
-
-      return res.status(200).json({
-        message: 'Google login successful',
-        isNewUser: false,
-        user: updatedUser,
+    } else {
+      const newUser = new User({
+        ...userProfile,
+        startedDate: userProfile.updatedDate,
+        aspirations: { task: [], fun: [], new: [] },
+        achievements: [],
       });
+      user = await newUser.save();
+      isNewUser = true;
     }
 
-    const newUser = new User({
-      ...userProfile,
-      startedDate: userProfile.updatedDate,
-      aspirations: { task: [], fun: [], new: [] },
-      achievements: [],
-    });
-    const createdUser = await newUser.save();
+    // Generate JWT token with userId
+    const token = signUserToken(user);
 
-    return res.status(201).json({
+    return res.status(isNewUser ? 201 : 200).json({
       message: 'Google login successful',
-      isNewUser: true,
-      user: createdUser,
+      isNewUser,
+      user,
+      token,
     });
   } catch (error) {
     const status = error.status || 500;
-
     return res.status(status).json({
       message: error.message || 'Google login failed',
     });
@@ -135,14 +145,20 @@ router.post('/login/google', async (req, res) => {
 
 router.put('/update/:id', createUpdateHandler({
   model: User,
-  buildSearchParams: (req) => ({ _id: req.params.id }),
+  buildSearchParams: (req) => {
+    let id = req.params.id;
+    return { _id: (id === 'me') ? req.userId : id };
+  },
   buildUpdate: (req) => buildUserPayload(req.body),
   notFoundMessage: 'User not found',
 }));
 
 router.delete('/delete/:id', createDeleteHandler({
   model: User,
-  buildSearchParams: (req) => ({ _id: req.params.id }),
+  buildSearchParams: (req) => {
+    let id = req.params.id;
+    return { _id: (id === 'me') ? req.userId : id };
+  },
   notFoundMessage: 'User not found',
   successMessage: 'User deleted successfully',
 }));
@@ -183,7 +199,7 @@ router.patch('/update-status/:id', async (req, res) => {
   }
   try {
     const user = await User.findByIdAndUpdate(
-      req.params.id,
+      (req.params.id === 'me') ? req.userId : req.params.id,
       { status },
       { new: true, runValidators: true }
     );
@@ -195,3 +211,25 @@ router.patch('/update-status/:id', async (req, res) => {
     return res.status(500).json({ message: error.message || 'Failed to update status' });
   }
 });
+
+// Place this after all requires and router initialization, before authMiddleware
+router.post('/refresh-token', async (req, res) => {
+  const { userId, email } = req.body || {};
+  if (!userId || !email) {
+    return res.status(400).json({ message: 'userId and email are required' });
+  }
+  try {
+    const user = await User.findOne({ _id: userId, email: String(email).toLowerCase() });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    const token = signUserToken(user);
+    return res.status(200).json({
+      message: 'Token refreshed',
+      token,
+    });
+  } catch (err) {
+    return res.status(500).json({ message: err.message || 'Failed to refresh token' });
+  }
+});
+
