@@ -22,14 +22,23 @@ const {
   buildTaskCompletePayload,
 } = require('../payloads/buildTaskPayload');
 
+const authMiddleware = require('../utils/authMiddleware');
+
+// Protect all routes below
+router.use(authMiddleware);
+
 router.get('/getAll', createGetAllHandler({
   model: Task,
   buildSearchParams: (req) => {
-    const { name, recurId, userId } = req.query;
+    const { name, recurId, state } = req.query;
+    const userId = req.userId;
     const search = {};
+
     if (name) search.name = { $regex: name, $options: 'i' };
     if (recurId) search.recurId = recurId;
     if (userId) search.userId = userId;
+    if (state) search.state = state;
+    console.log('Search params:', search);
     return search;
   },
   sort: { createdDate: -1 },
@@ -43,7 +52,7 @@ router.get('/get/:id', createGetOneHandler({
 
 router.post('/create', createCreateHandler({
   model: Task,
-  buildPayload: (req) => buildTaskPayload(req.body, { includeCreatedDate: true }),
+  buildPayload: (req) => buildTaskPayload( {...req.body, userId: req.userId }, { includeCreatedDate: true }),
   afterCreate: (savedTask, req) => applyTaskCreateEffects(savedTask, req.body),
 }));
 
