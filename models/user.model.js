@@ -104,7 +104,7 @@ const userSchema = new mongoose.Schema(
       schedule: {
         type: String,
         enum: ['daily', 'weekly', 'monthly'],
-        default: 'daily',
+        default: 'monthly',
         trim: true,
       },
       lastUpdatedDate: {

@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const rateLimit = require('express-rate-limit');
+const cors = require('cors');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpecs = require('./swagger');
 const db = require('./db/connection');
@@ -14,6 +15,15 @@ const app = express();
 const PORT = process.env.PORT || 8080;
 
 // ── Middleware ────────────────────────────────────────────────────────────────
+
+// ── CORS ─────────────────────────────────────────────────────────────────────
+app.use(cors({
+  origin: 'http://localhost:3000',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+}));
+
 app.use(express.json());
 
 // ── Rate limiting ─────────────────────────────────────────────────────────────
