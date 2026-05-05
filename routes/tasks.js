@@ -30,7 +30,7 @@ router.use(authMiddleware);
 router.get('/getAll', createGetAllHandler({
   model: Task,
   buildSearchParams: (req) => {
-    const { name, recurId, state } = req.query;
+    const { name, recurId, state, recurring } = req.query;
     const userId = req.userId;
     const search = {};
 
@@ -38,7 +38,6 @@ router.get('/getAll', createGetAllHandler({
     if (recurId) search.recurId = recurId;
     if (userId) search.userId = userId;
     if (state) search.state = state;
-    console.log('Search params:', search);
     return search;
   },
   sort: { createdDate: -1 },

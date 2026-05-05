@@ -9,10 +9,16 @@ const {
   createDeleteHandler,
 } = require('../utils/crudHandlers');
 
+const authMiddleware = require('../utils/authMiddleware');
+
+// Protect all routes below
+router.use(authMiddleware);
+
 router.get('/getAll', createGetAllHandler({
   model: RecurringTask,
   buildSearchParams: (req) => {
-    const { name, userId } = req.query;
+    const { name } = req.query;
+    const userId = req.userId;
     const search = {};
     if (name) search.name = { $regex: name, $options: 'i' };
     if (userId) search.userId = userId;
