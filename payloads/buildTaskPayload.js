@@ -77,6 +77,11 @@ const buildTaskPayload = (
     payload.userId = typeof userId === 'object' ? (userId._id ?? userId.id) : userId;
   }
 
+  const checklist = body.checklist ?? body.user;
+  if (checklist != null && checklist !== '') {
+    payload.checklist = Array.isArray(checklist) ? [...checklist] : [checklist];
+  }
+
   // Set state if provided, otherwise default to 'waiting' on create
   if (body.state) {
     payload.state = body.state;

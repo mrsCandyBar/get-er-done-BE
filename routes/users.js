@@ -193,7 +193,7 @@ router.patch('/achievement/:userId/:achievementIndex', async (req, res) => {
 // Update only the user's status
 router.patch('/update-status/:id', async (req, res) => {
   const { status } = req.body || {};
-  const allowedStatuses = ['friend', 'friend-new', 'friend-dear', 'friend-close', 'confidant'];
+  const allowedStatuses = ['friend', 'friend_new', 'friend_dear', 'friend_close', 'confidant'];
   if (!status || !allowedStatuses.includes(status)) {
     return res.status(400).json({ message: `Invalid status. Try another` });
   }

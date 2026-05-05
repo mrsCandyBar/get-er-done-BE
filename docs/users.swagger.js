@@ -48,7 +48,7 @@
  *         status:
  *           type: string
  *           description: User status
- *           enum: [friend, friend-new, friend-dear, friend-close, confidant]
+ *           enum: [friend, friend_new, friend_dear, friend_close, confidant]
  *         progressUpdatePush:
  *           type: string
  *         aspirations:
@@ -138,7 +138,7 @@
  *         status:
  *           type: string
  *           description: User status
- *           enum: [friend, friend-new, friend-dear, friend-close, confidant]
+ *           enum: [friend, friend_new, friend_dear, friend_close, confidant]
  *         progressUpdatePush:
  *           type: string
  *         aspirations:
@@ -281,7 +281,7 @@
  *             properties:
  *               status:
  *                 type: string
- *                 enum: [friend, friend-new, friend-dear, friend-close, confidant]
+ *                 enum: [friend, friend_new, friend_dear, friend_close, confidant]
  *     responses:
  *       200:
  *         description: Status updated successfully

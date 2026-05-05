@@ -29,6 +29,22 @@ const completedSchema = new mongoose.Schema(
   { _id: false }
 );
 
+const checklistSchema = new mongoose.Schema(
+  {
+    label: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    updateDate: Date,
+    checked: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  { _id: false }
+);
+
 const taskSchema = new mongoose.Schema(
   {
     name: {
@@ -71,6 +87,10 @@ const taskSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'TaskCategory',
       default: null,
+    },
+    checklist: {
+      type: [checklistSchema],
+      default: [],
     },
     userId: {
       type: mongoose.Schema.Types.ObjectId,

@@ -145,7 +145,7 @@ const userSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['friend', 'friend-new', 'friend-dear', 'friend-close', 'confidant'],
+      enum: ['friend', 'friend_new', 'friend_dear', 'friend_close', 'confidant'],
       default: 'friend',
       trim: true,
     },
