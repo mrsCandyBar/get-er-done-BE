@@ -103,10 +103,10 @@
  *             reason: to be more bold!
  *             url: ''
  *         progressUpdatePush: 
- *           schedule: "monthly",
- *           lastUpdatedDate: "2026-10-03T22:00:00.000Z",
- *           lastUpdateSent: "2026-10-03T22:00:00.000Z",
- *           updatedDate: "2026-10-03T22:00:00.000Z",
+ *           schedule: "monthly"
+ *           lastUpdatedDate: "2026-10-03T22:00:00.000Z"
+ *           lastUpdateSent: "2026-10-03T22:00:00.000Z"
+ *           updatedDate: "2026-10-03T22:00:00.000Z"
  *         aspirations:
  *           task: [69d76d7ab3f97a842c094818]
  *           fun: [69d76d7ab3f97a842c094819]
@@ -234,10 +234,10 @@
  *             reason: to be more bold!
  *             url: ''
  *         progressUpdatePush:
- *           schedule: "monthly",
- *           lastUpdatedDate: "2026-10-03T22:00:00.000Z",
- *           lastUpdateSent: "2026-10-03T22:00:00.000Z",
- *           updatedDate: "2026-10-03T22:00:00.000Z",
+ *           schedule: "monthly"
+ *           lastUpdatedDate: "2026-10-03T22:00:00.000Z"
+ *           lastUpdateSent: "2026-10-03T22:00:00.000Z"
+ *           updatedDate: "2026-10-03T22:00:00.000Z"
  *         aspirations:
  *           task: [69d76d7ab3f97a842c094818]
  *           fun: [69d76d7ab3f97a842c094819]
