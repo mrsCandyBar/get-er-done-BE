@@ -23,7 +23,7 @@ const inspirationSchema = new mongoose.Schema(
 
 const achievementBucketSchema = new mongoose.Schema(
   {
-    task: {
+    quest: {
       type: [mongoose.Schema.Types.ObjectId],
       ref: 'Task',
       default: [],

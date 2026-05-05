@@ -119,7 +119,7 @@ router.post('/login/google', async (req, res) => {
       const newUser = new User({
         ...userProfile,
         startedDate: userProfile.updatedDate,
-        aspirations: { task: [], fun: [], new: [] },
+        aspirations: { quest: [], fun: [], new: [] },
         achievements: [],
       });
       user = await newUser.save();
