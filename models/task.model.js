@@ -2,6 +2,11 @@ const mongoose = require('mongoose');
 
 const completedSchema = new mongoose.Schema(
   {
+    mood: {
+      type: String,
+      trim: true,
+      default: '',
+    },
     completedDate: {
       type: Date,
       default: null,
@@ -11,7 +16,28 @@ const completedSchema = new mongoose.Schema(
       trim: true,
       default: '',
     },
+    keepsakeUrl: {
+      type: String,
+      trim: true,
+      default: '',
+    },
     recur: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  { _id: false }
+);
+
+const checklistSchema = new mongoose.Schema(
+  {
+    label: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    updateDate: Date,
+    checked: {
       type: Boolean,
       default: false,
     },
@@ -43,9 +69,15 @@ const taskSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
-    recur: {
-      type: [mongoose.Schema.Types.Mixed],
-      default: [],
+    recurId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'RecurringTask',
+      default: null,
+    },
+    state: {
+      type: String,
+      enum: ['waiting', 'busy', 'complete'],
+      default: 'waiting',
     },
     completed: {
       type: completedSchema,
@@ -55,6 +87,10 @@ const taskSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'TaskCategory',
       default: null,
+    },
+    checklist: {
+      type: [checklistSchema],
+      default: [],
     },
     userId: {
       type: mongoose.Schema.Types.ObjectId,

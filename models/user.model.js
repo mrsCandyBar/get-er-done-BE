@@ -23,7 +23,7 @@ const inspirationSchema = new mongoose.Schema(
 
 const achievementBucketSchema = new mongoose.Schema(
   {
-    task: {
+    quest: {
       type: [mongoose.Schema.Types.ObjectId],
       ref: 'Task',
       default: [],
@@ -46,12 +46,15 @@ const achievementSchema = new mongoose.Schema(
   {
     completed: {
       type: achievementBucketSchema,
-      default: () => ({ task: [], fun: [], new: [] }),
+      default: () => ({ quest: [], fun: [], new: [] }),
     },
     recognised: {
-      type: [String],
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: 'Achievement',
       default: [],
     },
+    createdAt: Date,
+    completedAt: Date,
   },
   { _id: false }
 );
@@ -59,6 +62,27 @@ const achievementSchema = new mongoose.Schema(
 const userSchema = new mongoose.Schema(
   {
     name: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    email: {
+      type: String,
+      trim: true,
+      lowercase: true,
+      default: '',
+    },
+    googleId: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    profilePicture: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    authProvider: {
       type: String,
       trim: true,
       default: '',
@@ -77,13 +101,31 @@ const userSchema = new mongoose.Schema(
       default: [],
     },
     progressUpdatePush: {
-      type: String,
-      trim: true,
-      default: '',
+      schedule: {
+        type: String,
+        enum: ['daily', 'weekly', 'monthly'],
+        default: 'monthly',
+        trim: true,
+      },
+      lastUpdatedDate: {
+        type: String,
+        default: '',
+        trim: true,
+      },
+      lastUpdateSent: {
+        type: String,
+        default: '',
+        trim: true,
+      },
+      updatedDate: {
+        type: String,
+        default: '',
+        trim: true,
+      },
     },
     aspirations: {
       type: achievementBucketSchema,
-      default: () => ({ task: [], fun: [], new: [] }),
+      default: () => ({ quest: [], fun: [], new: [] }),
     },
     achievements: {
       type: [achievementSchema],
@@ -96,6 +138,16 @@ const userSchema = new mongoose.Schema(
     updatedDate: {
       type: Date,
       default: Date.now,
+    },
+    lastLoginDate: {
+      type: Date,
+      default: null,
+    },
+    status: {
+      type: String,
+      enum: ['friend', 'friend_new', 'friend_dear', 'friend_close', 'confidant'],
+      default: 'friend',
+      trim: true,
     },
   },
   {

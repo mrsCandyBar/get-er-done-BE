@@ -22,9 +22,24 @@ const {
   buildTaskCompletePayload,
 } = require('../payloads/buildTaskPayload');
 
+const authMiddleware = require('../utils/authMiddleware');
+
+// Protect all routes below
+router.use(authMiddleware);
+
 router.get('/getAll', createGetAllHandler({
   model: Task,
-  buildSearchParams: () => ({}),
+  buildSearchParams: (req) => {
+    const { name, recurId, state, recurring } = req.query;
+    const userId = req.userId;
+    const search = {};
+
+    if (name) search.name = { $regex: name, $options: 'i' };
+    if (recurId) search.recurId = recurId;
+    if (userId) search.userId = userId;
+    if (state) search.state = state;
+    return search;
+  },
   sort: { createdDate: -1 },
 }));
 
@@ -36,7 +51,7 @@ router.get('/get/:id', createGetOneHandler({
 
 router.post('/create', createCreateHandler({
   model: Task,
-  buildPayload: (req) => buildTaskPayload(req.body, { includeCreatedDate: true }),
+  buildPayload: (req) => buildTaskPayload( {...req.body, userId: req.userId }, { includeCreatedDate: true }),
   afterCreate: (savedTask, req) => applyTaskCreateEffects(savedTask, req.body),
 }));
 
@@ -47,7 +62,7 @@ router.put('/update/:id', createUpdateHandler({
   notFoundMessage: 'Task not found',
 }));
 
-router.put('/startTask/:id', createUpdateHandler({
+router.put('/start/:id', createUpdateHandler({
   model: Task,
   buildSearchParams: (req) => ({ _id: req.params.id }),
   buildUpdate: () => buildTaskStartPayload(),
@@ -55,7 +70,7 @@ router.put('/startTask/:id', createUpdateHandler({
   notFoundMessage: 'Task not found',
 }));
 
-router.put('/pauseTask/:id', createUpdateHandler({
+router.put('/pause/:id', createUpdateHandler({
   model: Task,
   buildSearchParams: (req) => ({ _id: req.params.id }),
   buildUpdate: () => buildTaskPausePayload(),
@@ -63,7 +78,7 @@ router.put('/pauseTask/:id', createUpdateHandler({
   notFoundMessage: 'Task not found',
 }));
 
-router.put('/completeTask/:id', createUpdateHandler({
+router.put('/complete/:id', createUpdateHandler({
   model: Task,
   buildSearchParams: (req) => ({ _id: req.params.id }),
   buildUpdate: (req) => buildTaskCompletePayload(req.body),

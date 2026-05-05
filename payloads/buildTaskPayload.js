@@ -17,6 +17,10 @@ const buildCompletedPayload = (completedBody) => {
     completed.recur = Boolean(completedBody.recur);
   }
 
+  if (completedBody.mood != null) {
+    completed.mood = String(completedBody.mood);
+  }
+
   return completed;
 };
 
@@ -64,9 +68,25 @@ const buildTaskPayload = (
     payload.category = categoryId;
   }
 
+  if (body.recurId != null && body.recurId !== '') {
+    payload.recurId = body.recurId;
+  }
+
   const userId = body.userId ?? body.user;
   if (userId != null && userId !== '') {
     payload.userId = typeof userId === 'object' ? (userId._id ?? userId.id) : userId;
+  }
+
+  const checklist = body.checklist ?? body.user;
+  if (checklist != null && checklist !== '') {
+    payload.checklist = Array.isArray(checklist) ? [...checklist] : [checklist];
+  }
+
+  // Set state if provided, otherwise default to 'waiting' on create
+  if (body.state) {
+    payload.state = body.state;
+  } else {
+    payload.state = 'waiting';
   }
 
   return payload;
@@ -74,10 +94,10 @@ const buildTaskPayload = (
 
 const buildTaskStartPayload = () => {
   const now = new Date();
-
   return {
     startedDate: now,
     updatedDate: now,
+    state: 'busy',
   };
 };
 
@@ -91,7 +111,8 @@ const buildTaskCompletePayload = (body = {}) => {
   const recur = body.recur ?? body.completed?.recur;
 
   const completed = {
-    completedDate: now,
+      completedDate: now,
+      mood: body.mood ?? body.completed?.mood,
   };
 
   if (finalNotes != null) {
@@ -105,6 +126,7 @@ const buildTaskCompletePayload = (body = {}) => {
   return {
     updatedDate: now,
     completed,
+    state: 'complete',
   };
 };
 

@@ -20,6 +20,15 @@
  *           type: string
  *         name:
  *           type: string
+ *         email:
+ *           type: string
+ *           format: email
+ *         googleId:
+ *           type: string
+ *         profilePicture:
+ *           type: string
+ *         authProvider:
+ *           type: string
  *         dob:
  *           type: string
  *           format: date-time
@@ -36,8 +45,26 @@
  *                 type: string
  *               url:
  *                 type: string
- *         progressUpdatePush:
+ *         status:
  *           type: string
+ *           description: User status
+ *           enum: [friend, friend_new, friend_dear, friend_close, confidant]
+*         progressUpdatePush:
+*           type: object
+*           properties:
+*             schedule:
+*               type: string
+*               enum: [daily, weekly, monthly]
+*               default: monthly
+*             lastUpdatedDate:
+*               type: string
+*               description: ISO date string
+*             lastUpdateSent:
+*               type: string
+*               description: ISO date string
+*             updatedDate:
+*               type: string
+*               description: ISO date string
  *         aspirations:
  *           type: object
  *           properties:
@@ -53,46 +80,33 @@
  *               type: array
  *               items:
  *                 type: string
- *         achievements:
- *           type: array
- *           items:
- *             type: object
- *             properties:
- *               completed:
- *                 type: object
- *                 properties:
- *                   task:
- *                     type: array
- *                     items:
- *                       type: string
- *                   fun:
- *                     type: array
- *                     items:
- *                       type: string
- *                   new:
- *                     type: array
- *                     items:
- *                       type: string
- *               recognised:
- *                 type: array
- *                 items:
- *                   type: string
  *         startedDate:
  *           type: string
  *           format: date-time
  *         updatedDate:
  *           type: string
  *           format: date-time
+ *         lastLoginDate:
+ *           type: string
+ *           format: date-time
  *       example:
  *         _id: 69d977b8abda6e6ee0cc1f29
  *         name: Candice Bar
+ *         email: candice@example.com
+ *         googleId: google-user-123
+ *         profilePicture: https://example.com/avatar.png
+ *         authProvider: google
  *         dob: 1987-04-06T22:00:00.000Z
  *         about: I am a developer looking to expand my ideals
  *         inspirations:
  *           - inspirations: Vivienne Westwood, Yoshitaka Amano, Sephiroth
  *             reason: to be more bold!
  *             url: ''
- *         progressUpdatePush: 1 month
+ *         progressUpdatePush: 
+ *           schedule: "monthly"
+ *           lastUpdatedDate: "2026-10-03T22:00:00.000Z"
+ *           lastUpdateSent: "2026-10-03T22:00:00.000Z"
+ *           updatedDate: "2026-10-03T22:00:00.000Z"
  *         aspirations:
  *           task: [69d76d7ab3f97a842c094818]
  *           fun: [69d76d7ab3f97a842c094819]
@@ -105,6 +119,8 @@
  *             recognised:
  *               - consistency
  *               - creativity
+ *             createdAt: 2026-10-03T22:00:00.000Z
+ *             completedAt: 2026-10-04T22:00:00.000Z
  *         startedDate: 2026-10-03T22:00:00.000Z
  *         updatedDate: 2026-10-03T22:00:00.000Z
  *     UserInput:
@@ -112,6 +128,15 @@
  *       properties:
  *         name:
  *           type: string
+ *         email:
+ *           type: string
+ *           format: email
+ *         googleId:
+ *           type: string
+ *         profilePicture:
+ *           type: string
+ *         authProvider:
+ *           type: string
  *         dob:
  *           type: string
  *           format: date-time
@@ -128,8 +153,26 @@
  *                 type: string
  *               url:
  *                 type: string
- *         progressUpdatePush:
+ *         status:
  *           type: string
+ *           description: User status
+ *           enum: [friend, friend_new, friend_dear, friend_close, confidant]
+ *         progressUpdatePush:
+*           type: object
+*           properties:
+*             schedule:
+*               type: string
+*               enum: [daily, weekly, monthly]
+*               default: monthly
+*             lastUpdatedDate:
+*               type: string
+*               description: ISO date string
+*             lastUpdateSent:
+*               type: string
+*               description: ISO date string
+*             updatedDate:
+*               type: string
+*               description: ISO date string
  *         aspirations:
  *           type: object
  *           properties:
@@ -175,15 +218,26 @@
  *         updatedDate:
  *           type: string
  *           format: date-time
+ *         lastLoginDate:
+ *           type: string
+ *           format: date-time
  *       example:
  *         name: Candice Bar
+ *         email: candice@example.com
+ *         googleId: google-user-123
+ *         profilePicture: https://example.com/avatar.png
+ *         authProvider: google
  *         dob: 1987-04-06T22:00:00.000Z
  *         about: I am a developer looking to expand my ideals
  *         inspirations:
  *           - inspirations: Vivienne Westwood, Yoshitaka Amano, Sephiroth
  *             reason: to be more bold!
  *             url: ''
- *         progressUpdatePush: 1 month
+ *         progressUpdatePush:
+ *           schedule: "monthly"
+ *           lastUpdatedDate: "2026-10-03T22:00:00.000Z"
+ *           lastUpdateSent: "2026-10-03T22:00:00.000Z"
+ *           updatedDate: "2026-10-03T22:00:00.000Z"
  *         aspirations:
  *           task: [69d76d7ab3f97a842c094818]
  *           fun: [69d76d7ab3f97a842c094819]
@@ -198,6 +252,79 @@
  *               - creativity
  *         startedDate: 2026-10-03T22:00:00.000Z
  *         updatedDate: 2026-10-03T22:00:00.000Z
+ */
+
+/**
+ * @swagger
+* /api/users/achievement/{userId}/{achievementIndex}:
+ *   patch:
+ *     summary: Add achievements to a user's achievements.recognised array
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: achievementIndex
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - achievementIds
+ *             properties:
+ *               achievementIds:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   description: Achievement ObjectId
+ *     responses:
+ *       200:
+ *         description: Achievements added to recognised
+ *       400:
+ *         description: achievementIds missing or invalid
+ *       404:
+ *         description: User or achievement entry not found
+ */
+
+/**
+ * @swagger
+ * /api/users/update-status/{id}:
+ *   patch:
+ *     summary: Update only the user's status
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - status
+ *             properties:
+ *               status:
+ *                 type: string
+ *                 enum: [friend, friend_new, friend_dear, friend_close, confidant]
+ *     responses:
+ *       200:
+ *         description: Status updated successfully
+ *       400:
+ *         description: Invalid status value
+ *       404:
+ *         description: User not found
  */
 
 /**
@@ -280,6 +407,35 @@
  *         description: User updated successfully
  *       404:
  *         description: User not found
+ */
+
+/**
+ * @swagger
+ * /api/users/login/google:
+ *   post:
+ *     summary: Log in with Google Sign-In
+ *     tags: [Users]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - idToken
+ *             properties:
+ *               idToken:
+ *                 type: string
+ *                 description: Google ID token returned by the frontend sign-in flow
+ *     responses:
+ *       200:
+ *         description: Existing user logged in successfully
+ *       201:
+ *         description: New user created from Google profile and logged in successfully
+ *       400:
+ *         description: Missing Google token
+ *       401:
+ *         description: Invalid or unverified Google token
  */
 
 /**

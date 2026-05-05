@@ -48,7 +48,12 @@ const mockUser = {
       url: '',
     },
   ],
-  progressUpdatePush: '1 month',
+  progressUpdatePush: {
+     schedule: "monthly",
+     lastUpdatedDate: "2026-10-03T22:00:00.000Z",
+     lastUpdateSent: "2026-10-03T22:00:00.000Z",
+     updatedDate: "2026-10-03T22:00:00.000Z",
+  },
   aspirations: {
     task: ['69d76d7ab3f97a842c094818'],
     fun: ['69d76d7ab3f97a842c094818', '69d76d7ab3f97a842c094819'],
@@ -96,10 +101,10 @@ jest.mock('../models/taskCategory.model', () => {
 
 jest.mock('../models/user.model', () => {
   const mockSave = jest.fn().mockResolvedValue(mockUser);
-  function MockUser(data) {
+  const MockUser = jest.fn(function MockUser(data) {
     Object.assign(this, data);
     this.save = mockSave;
-  }
+  });
   MockUser.find = jest.fn(() => ({ sort: jest.fn().mockResolvedValue([mockUser]) }));
   MockUser.findOne = jest.fn().mockResolvedValue(mockUser);
   MockUser.findById = jest.fn().mockResolvedValue(mockUser);
@@ -674,7 +679,12 @@ describe('POST /api/users/create', () => {
             url: '',
           },
         ],
-        progressUpdatePush: '1 month',
+        progressUpdatePush: {
+           schedule: "monthly",
+           lastUpdatedDate: "2026-10-03T22:00:00.000Z",
+           lastUpdateSent: "2026-10-03T22:00:00.000Z",
+           updatedDate: "2026-10-03T22:00:00.000Z",
+        },
         aspirations: {
           task: ['69d76d7ab3f97a842c094818'],
           fun: ['69d76d7ab3f97a842c094819'],
@@ -704,7 +714,12 @@ describe('PUT /api/users/update/:id', () => {
       .put(`/api/users/update/${mockUser._id}`)
       .send({
         about: 'Updated about text',
-        progressUpdatePush: '2 weeks',
+        progressUpdatePush: {
+           schedule: "monthly",
+           lastUpdatedDate: "2026-10-03T22:00:00.000Z",
+           lastUpdateSent: "2026-10-03T22:00:00.000Z",
+           updatedDate: "2026-10-03T22:00:00.000Z",
+        },
         aspirations: {
           task: ['69d76d7ab3f97a842c094818'],
           fun: ['69d76d7ab3f97a842c094819'],
@@ -727,7 +742,12 @@ describe('PUT /api/users/update/:id', () => {
     const [, updatePayload] = User.findByIdAndUpdate.mock.calls.at(-1);
     expect(updatePayload).toEqual(expect.objectContaining({
       about: 'Updated about text',
-      progressUpdatePush: '2 weeks',
+      progressUpdatePush: {
+          schedule: "monthly",
+          lastUpdatedDate: "2026-10-03T22:00:00.000Z",
+          lastUpdateSent: "2026-10-03T22:00:00.000Z",
+          updatedDate: "2026-10-03T22:00:00.000Z",
+      },
       aspirations: {
         task: ['69d76d7ab3f97a842c094818'],
         fun: ['69d76d7ab3f97a842c094819'],
@@ -752,6 +772,101 @@ describe('PUT /api/users/update/:id', () => {
       .put('/api/users/update/000000000000000000000000')
       .send({ name: 'x' });
     expect(res.status).toBe(404);
+  });
+});
+
+describe('POST /api/users/login/google', () => {
+  beforeEach(() => {
+    User.findOne.mockReset();
+    User.findOne.mockResolvedValue(mockUser);
+    User.findByIdAndUpdate.mockClear();
+    global.fetch = jest.fn();
+  });
+
+  afterEach(() => {
+    delete global.fetch;
+  });
+
+  it('returns 200 and logs in an existing Google user', async () => {
+    global.fetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        sub: 'google-user-123',
+        email: 'candice@example.com',
+        email_verified: 'true',
+        name: 'Candice Bar',
+        picture: 'https://example.com/avatar.png',
+      }),
+    });
+
+    const res = await request(app)
+      .post('/api/users/login/google')
+      .send({ idToken: 'valid-google-token' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.message).toBe('Google login successful');
+    expect(res.body.isNewUser).toBe(false);
+    expect(User.findOne).toHaveBeenCalledWith({
+      $or: [
+        { googleId: 'google-user-123' },
+        { email: 'candice@example.com' },
+      ],
+    });
+    expect(User.findByIdAndUpdate).toHaveBeenCalledWith(
+      mockUser._id,
+      expect.objectContaining({
+        name: 'Candice Bar',
+        email: 'candice@example.com',
+        googleId: 'google-user-123',
+        profilePicture: 'https://example.com/avatar.png',
+        updatedDate: expect.any(Date),
+        lastLoginDate: expect.any(Date),
+      }),
+      { new: true, runValidators: true }
+    );
+  });
+
+  it('returns 201 and creates a user when the Google account is new', async () => {
+    User.findOne.mockResolvedValueOnce(null);
+    global.fetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        sub: 'google-user-456',
+        email: 'newuser@example.com',
+        email_verified: 'true',
+        given_name: 'New',
+        family_name: 'User',
+        picture: 'https://example.com/new-user.png',
+      }),
+    });
+
+    const res = await request(app)
+      .post('/api/users/login/google')
+      .send({ idToken: 'brand-new-google-token' });
+
+    expect(res.status).toBe(201);
+    expect(res.body.message).toBe('Google login successful');
+    expect(res.body.isNewUser).toBe(true);
+
+    const createdUserPayload = User.mock.calls.at(-1)[0];
+    expect(createdUserPayload).toEqual(expect.objectContaining({
+      name: 'New User',
+      email: 'newuser@example.com',
+      googleId: 'google-user-456',
+      profilePicture: 'https://example.com/new-user.png',
+      startedDate: expect.any(Date),
+      updatedDate: expect.any(Date),
+      lastLoginDate: expect.any(Date),
+    }));
+  });
+
+  it('returns 400 when the Google id token is missing', async () => {
+    const res = await request(app)
+      .post('/api/users/login/google')
+      .send({});
+
+    expect(res.status).toBe(400);
+    expect(res.body.message).toBe('Google idToken is required');
   });
 });
 

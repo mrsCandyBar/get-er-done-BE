@@ -4,7 +4,7 @@ const buildTaskIdBucket = (bucket) => {
   }
 
   return {
-    task: Array.isArray(bucket.task) ? [...bucket.task] : [],
+    quest: Array.isArray(bucket.quest) ? [...bucket.quest] : [],
     fun: Array.isArray(bucket.fun) ? [...bucket.fun] : [],
     new: Array.isArray(bucket.new) ? [...bucket.new] : [],
   };
@@ -38,6 +38,22 @@ const buildUserPayload = (body = {}) => {
     payload.name = String(body.name ?? body.displayName ?? body.username);
   }
 
+  if (body.email != null) {
+    payload.email = String(body.email).trim().toLowerCase();
+  }
+
+  if (body.googleId != null) {
+    payload.googleId = String(body.googleId).trim();
+  }
+
+  if (body.profilePicture != null || body.picture != null) {
+    payload.profilePicture = String(body.profilePicture ?? body.picture);
+  }
+
+  if (body.authProvider != null) {
+    payload.authProvider = String(body.authProvider);
+  }
+
   if (body.dob != null) {
     payload.dob = new Date(body.dob);
   }
@@ -55,7 +71,7 @@ const buildUserPayload = (body = {}) => {
   }
 
   if (body.progressUpdatePush != null) {
-    payload.progressUpdatePush = String(body.progressUpdatePush);
+    payload.progressUpdatePush = body.progressUpdatePush;
   }
 
   const aspirations = buildTaskIdBucket(body.aspirations);
@@ -80,6 +96,14 @@ const buildUserPayload = (body = {}) => {
 
   if (body.updatedDate != null) {
     payload.updatedDate = new Date(body.updatedDate);
+  }
+
+  if (body.lastLoginDate != null) {
+    payload.lastLoginDate = new Date(body.lastLoginDate);
+  }
+
+  if (body.status != null) {
+    payload.status = String(body.status);
   }
 
   return payload;

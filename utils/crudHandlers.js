@@ -16,7 +16,7 @@ const createGetOneHandler = ({
   model,
   buildSearchParams,
   notFoundMessage = 'Resource not found',
-  findRecord = (currentModel, searchParams) => {
+  findRecord = (currentModel, searchParams, req, res) => {
     if (
       searchParams &&
       typeof searchParams === 'object' &&
@@ -32,7 +32,10 @@ const createGetOneHandler = ({
 }) => async (req, res) => {
   try {
     const searchParams = buildSearchParams(req);
-    const record = await findRecord(model, searchParams);
+    const record = await findRecord(model, searchParams, req, res);
+
+    // If findRecord handled the response (e.g., 401), stop here
+    if (record === null && req && req._authError) return;
 
     if (!record) {
       return res.status(404).json({ message: notFoundMessage });

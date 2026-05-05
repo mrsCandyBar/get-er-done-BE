@@ -1,17 +1,29 @@
 require('dotenv').config();
 const express = require('express');
 const rateLimit = require('express-rate-limit');
+const cors = require('cors');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpecs = require('./swagger');
 const db = require('./db/connection');
 const tasksRouter = require('./routes/tasks');
 const taskCategoriesRouter = require('./routes/taskCategories');
 const usersRouter = require('./routes/users');
+const recurringTasksRouter = require('./routes/recurringTasks');
+const achievementsRouter = require('./routes/achievements');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 
 // ── Middleware ────────────────────────────────────────────────────────────────
+
+// ── CORS ─────────────────────────────────────────────────────────────────────
+app.use(cors({
+  origin: 'http://localhost:3000',
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+}));
+
 app.use(express.json());
 
 // ── Rate limiting ─────────────────────────────────────────────────────────────
@@ -196,6 +208,7 @@ app.get('/', (req, res) => {
       <tr><td>GET</td>    <td><code>/api/users/getAll</code></td>              <td>Retrieve all users</td></tr>
       <tr><td>GET</td>    <td><code>/api/users/get/:id</code></td>             <td>Retrieve a single user</td></tr>
       <tr><td>POST</td>   <td><code>/api/users/create</code></td>              <td>Create a user</td></tr>
+      <tr><td>POST</td>   <td><code>/api/users/login/google</code></td>        <td>Verify a Google Sign-In token and log in or create a user</td></tr>
       <tr><td>PUT</td>    <td><code>/api/users/update/:id</code></td>          <td>Update a user</td></tr>
       <tr><td>DELETE</td> <td><code>/api/users/delete/:id</code></td>          <td>Delete a user</td></tr>
     </tbody>
@@ -249,6 +262,8 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
 app.use('/api/tasks', tasksRouter);
 app.use('/api/task-categories', taskCategoriesRouter);
 app.use('/api/users', usersRouter);
+app.use('/api/recurring-tasks', recurringTasksRouter);
+app.use('/api/achievements', achievementsRouter);
 
 // ── Start (only when run directly, not when required by tests) ────────────────
 if (require.main === module) {

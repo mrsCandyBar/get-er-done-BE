@@ -40,16 +40,25 @@
  *           type: array
  *           items:
  *             type: string
+*         recurId:
+*           type: array
+*           items:
+*             type: string
+*           description: Array of RecurringTask IDs this task is associated with
  *         completed:
- *           type: object
- *           properties:
- *             completedDate:
- *               type: string
- *               format: date-time
- *             finalNotes:
- *               type: string
- *             recur:
- *               type: boolean
+*           type: object
+*           properties:
+*             mood:
+*               type: string
+*               description: Mood after completing the task
+*               enum: [happy, love, not-sure, confused, not-for-me]
+*             completedDate:
+*               type: string
+*               format: date-time
+*             finalNotes:
+*               type: string
+*             recur:
+*               type: boolean
  *         category:
  *           type: string
  *           description: Related task category ID
@@ -61,10 +70,12 @@
  *         startedDate: 2026-10-04T09:00:00.000Z
  *         updatedDate: 2026-10-05T12:30:00.000Z
  *         recur: []
+*         recurId: [6628e7b2c1a4e2a1b8c1d2e3]
  *         completed:
- *           completedDate: 2026-10-03T22:00:00.000Z
- *           finalNotes: will do this again!
- *           recur: true
+*           mood: happy
+*           completedDate: 2026-10-03T22:00:00.000Z
+*           finalNotes: will do this again!
+*           recur: true
  *         category: 69d769a5b3f97a842c094800
  *     TaskInput:
  *       type: object
@@ -85,6 +96,11 @@
  *           type: array
  *           items:
  *             type: string
+*         recurId:
+*           type: array
+*           items:
+*             type: string
+*           description: Array of RecurringTask IDs this task is associated with
  *         completed:
  *           type: object
  *           properties:
@@ -107,6 +123,7 @@
  *         startedDate: 2026-10-04T09:00:00.000Z
  *         updatedDate: 2026-10-05T12:30:00.000Z
  *         recur: []
+*         recurId: [6628e7b2c1a4e2a1b8c1d2e3]
  *         completed:
  *           completedDate: 2026-10-03T22:00:00.000Z
  *           finalNotes: will do this again!
@@ -258,7 +275,7 @@
 
 /**
  * @swagger
- * /api/tasks/startTask/{id}:
+* /api/tasks/start/{id}:
  *   put:
  *     summary: Update the task start dates and sync the related category/user progress state
  *     tags: [Tasks]
@@ -292,7 +309,7 @@
 
 /**
  * @swagger
- * /api/tasks/pauseTask/{id}:
+* /api/tasks/pause/{id}:
  *   put:
  *     summary: Pause a task and move the related category progress from busy back to waiting
  *     tags: [Tasks]
@@ -324,7 +341,7 @@
 
 /**
  * @swagger
- * /api/tasks/completeTask/{id}:
+* /api/tasks/complete/{id}:
  *   put:
  *     summary: Complete a task, update related user/category progress, and optionally create a recurring follow-up task
  *     tags: [Tasks]
