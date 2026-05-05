@@ -49,8 +49,22 @@
  *           type: string
  *           description: User status
  *           enum: [friend, friend_new, friend_dear, friend_close, confidant]
- *         progressUpdatePush:
- *           type: string
+*         progressUpdatePush:
+*           type: object
+*           properties:
+*             schedule:
+*               type: string
+*               enum: [daily, weekly, monthly]
+*               default: monthly
+*             lastUpdatedDate:
+*               type: string
+*               description: ISO date string
+*             lastUpdateSent:
+*               type: string
+*               description: ISO date string
+*             updatedDate:
+*               type: string
+*               description: ISO date string
  *         aspirations:
  *           type: object
  *           properties:
@@ -88,7 +102,11 @@
  *           - inspirations: Vivienne Westwood, Yoshitaka Amano, Sephiroth
  *             reason: to be more bold!
  *             url: ''
- *         progressUpdatePush: 1 month
+ *         progressUpdatePush: 
+ *           schedule: "monthly",
+ *           lastUpdatedDate: "2026-10-03T22:00:00.000Z",
+ *           lastUpdateSent: "2026-10-03T22:00:00.000Z",
+ *           updatedDate: "2026-10-03T22:00:00.000Z",
  *         aspirations:
  *           task: [69d76d7ab3f97a842c094818]
  *           fun: [69d76d7ab3f97a842c094819]
@@ -140,7 +158,21 @@
  *           description: User status
  *           enum: [friend, friend_new, friend_dear, friend_close, confidant]
  *         progressUpdatePush:
- *           type: string
+*           type: object
+*           properties:
+*             schedule:
+*               type: string
+*               enum: [daily, weekly, monthly]
+*               default: monthly
+*             lastUpdatedDate:
+*               type: string
+*               description: ISO date string
+*             lastUpdateSent:
+*               type: string
+*               description: ISO date string
+*             updatedDate:
+*               type: string
+*               description: ISO date string
  *         aspirations:
  *           type: object
  *           properties:
@@ -201,7 +233,11 @@
  *           - inspirations: Vivienne Westwood, Yoshitaka Amano, Sephiroth
  *             reason: to be more bold!
  *             url: ''
- *         progressUpdatePush: 1 month
+ *         progressUpdatePush:
+ *           schedule: "monthly",
+ *           lastUpdatedDate: "2026-10-03T22:00:00.000Z",
+ *           lastUpdateSent: "2026-10-03T22:00:00.000Z",
+ *           updatedDate: "2026-10-03T22:00:00.000Z",
  *         aspirations:
  *           task: [69d76d7ab3f97a842c094818]
  *           fun: [69d76d7ab3f97a842c094819]

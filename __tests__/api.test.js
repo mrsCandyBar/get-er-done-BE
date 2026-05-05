@@ -48,7 +48,12 @@ const mockUser = {
       url: '',
     },
   ],
-  progressUpdatePush: '1 month',
+  progressUpdatePush: {
+     schedule: "monthly",
+     lastUpdatedDate: "2026-10-03T22:00:00.000Z",
+     lastUpdateSent: "2026-10-03T22:00:00.000Z",
+     updatedDate: "2026-10-03T22:00:00.000Z",
+  },
   aspirations: {
     task: ['69d76d7ab3f97a842c094818'],
     fun: ['69d76d7ab3f97a842c094818', '69d76d7ab3f97a842c094819'],
@@ -674,7 +679,12 @@ describe('POST /api/users/create', () => {
             url: '',
           },
         ],
-        progressUpdatePush: '1 month',
+        progressUpdatePush: {
+           schedule: "monthly",
+           lastUpdatedDate: "2026-10-03T22:00:00.000Z",
+           lastUpdateSent: "2026-10-03T22:00:00.000Z",
+           updatedDate: "2026-10-03T22:00:00.000Z",
+        },
         aspirations: {
           task: ['69d76d7ab3f97a842c094818'],
           fun: ['69d76d7ab3f97a842c094819'],
@@ -704,7 +714,12 @@ describe('PUT /api/users/update/:id', () => {
       .put(`/api/users/update/${mockUser._id}`)
       .send({
         about: 'Updated about text',
-        progressUpdatePush: '2 weeks',
+        progressUpdatePush: {
+           schedule: "monthly",
+           lastUpdatedDate: "2026-10-03T22:00:00.000Z",
+           lastUpdateSent: "2026-10-03T22:00:00.000Z",
+           updatedDate: "2026-10-03T22:00:00.000Z",
+        },
         aspirations: {
           task: ['69d76d7ab3f97a842c094818'],
           fun: ['69d76d7ab3f97a842c094819'],
@@ -727,7 +742,12 @@ describe('PUT /api/users/update/:id', () => {
     const [, updatePayload] = User.findByIdAndUpdate.mock.calls.at(-1);
     expect(updatePayload).toEqual(expect.objectContaining({
       about: 'Updated about text',
-      progressUpdatePush: '2 weeks',
+      progressUpdatePush: {
+          schedule: "monthly",
+          lastUpdatedDate: "2026-10-03T22:00:00.000Z",
+          lastUpdateSent: "2026-10-03T22:00:00.000Z",
+          updatedDate: "2026-10-03T22:00:00.000Z",
+      },
       aspirations: {
         task: ['69d76d7ab3f97a842c094818'],
         fun: ['69d76d7ab3f97a842c094819'],

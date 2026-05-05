@@ -71,7 +71,7 @@ const buildUserPayload = (body = {}) => {
   }
 
   if (body.progressUpdatePush != null) {
-    payload.progressUpdatePush = String(body.progressUpdatePush);
+    payload.progressUpdatePush = body.progressUpdatePush;
   }
 
   const aspirations = buildTaskIdBucket(body.aspirations);
