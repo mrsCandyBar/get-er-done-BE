@@ -7,6 +7,7 @@ const {
   createGetOneHandler,
   createCreateHandler,
   createUpdateHandler,
+  createPatchHandler,
   createDeleteHandler,
 } = require('../utils/crudHandlers');
 
@@ -67,6 +68,11 @@ const buildGoogleUserProfile = (googlePayload = {}) => {
   };
 };
 
+const buildUserSearchParams = (req) => {
+  const id = req.params.id;
+  return { _id: id === 'me' ? req.userId : id };
+};
+
 
 // Protect all routes below
 router.use(authMiddleware);
@@ -79,10 +85,7 @@ router.get('/getAll', createGetAllHandler({
 
 router.get('/get/:id', createGetOneHandler({
   model: User,
-  buildSearchParams: (req) => {
-    let id = req.params.id;
-    return { _id: (id === 'me') ? req.userId : id };
-  },
+  buildSearchParams: buildUserSearchParams,
   notFoundMessage: 'User not found'
 }));
 
@@ -113,7 +116,7 @@ router.post('/login/google', async (req, res) => {
       user = await User.findByIdAndUpdate(
         existingUser._id,
         userProfile,
-        { new: true, runValidators: true }
+        { returnDocument: 'after', runValidators: true }
       );
     } else {
       const newUser = new User({
@@ -145,72 +148,87 @@ router.post('/login/google', async (req, res) => {
 
 router.put('/update/:id', createUpdateHandler({
   model: User,
-  buildSearchParams: (req) => {
-    let id = req.params.id;
-    return { _id: (id === 'me') ? req.userId : id };
-  },
+  buildSearchParams: buildUserSearchParams,
   buildUpdate: (req) => buildUserPayload(req.body),
   notFoundMessage: 'User not found',
 }));
 
 router.delete('/delete/:id', createDeleteHandler({
   model: User,
-  buildSearchParams: (req) => {
-    let id = req.params.id;
-    return { _id: (id === 'me') ? req.userId : id };
-  },
+  buildSearchParams: buildUserSearchParams,
   notFoundMessage: 'User not found',
   successMessage: 'User deleted successfully',
 }));
 
-module.exports = router;
-
 // Add achievements to a user's achievements.recognised array
-router.patch('/achievement/:userId/:achievementIndex', async (req, res) => {
-  const { achievementIds } = req.body; // expects array of achievement ObjectIds
-  const { userId, achievementIndex } = req.params;
-  if (!Array.isArray(achievementIds) || !achievementIds.length) {
-    return res.status(400).json({ message: 'achievementIds must be a non-empty array of ObjectIds' });
-  }
-  try {
-    const user = await User.findById(userId);
-    if (!user) return res.status(404).json({ message: 'User not found' });
-    if (!user.achievements[achievementIndex]) {
-      return res.status(404).json({ message: 'Achievement entry not found for this user' });
+router.patch('/achievement/:userId/:achievementIndex', createPatchHandler({
+  model: User,
+  buildSearchParams: (req) => ({
+    _id: req.params.userId,
+    achievementIndex: Number(req.params.achievementIndex),
+  }),
+  buildUpdate: (req) => {
+    const { achievementIds } = req.body || {};
+
+    if (!Array.isArray(achievementIds) || achievementIds.length === 0) {
+      const error = new Error('achievementIds must be a non-empty array of ObjectIds');
+      error.status = 400;
+      throw error;
     }
-    // Add unique ObjectIds to recognised
-    const current = user.achievements[achievementIndex].recognised.map(id => id.toString());
-    achievementIds.forEach(id => {
-      if (!current.includes(id)) user.achievements[achievementIndex].recognised.push(id);
+
+    return { achievementIds };
+  },
+  updateRecord: async (currentModel, searchParams, update) => {
+    const user = await currentModel.findById(searchParams._id);
+
+    if (!user) {
+      return null;
+    }
+
+    const targetAchievement = user.achievements?.[searchParams.achievementIndex];
+    if (!targetAchievement) {
+      const error = new Error('Achievement entry not found for this user');
+      error.status = 404;
+      throw error;
+    }
+
+    const recognised = Array.isArray(targetAchievement.recognised)
+      ? targetAchievement.recognised
+      : [];
+    const current = recognised.map((id) => id.toString());
+
+    update.achievementIds.forEach((id) => {
+      if (!current.includes(String(id))) {
+        recognised.push(id);
+      }
     });
+
     await user.save();
-    return res.status(200).json({ message: 'Achievements added to recognised', user });
-  } catch (err) {
-    return res.status(500).json({ message: err.message });
-  }
-});
+    return user;
+  },
+  notFoundMessage: 'User not found',
+  buildSuccessPayload: (user) => ({ message: 'Achievements added to recognised', user }),
+}));
 
 // Update only the user's status
-router.patch('/update-status/:id', async (req, res) => {
-  const { status } = req.body || {};
-  const allowedStatuses = ['friend', 'friend_new', 'friend_dear', 'friend_close', 'confidant'];
-  if (!status || !allowedStatuses.includes(status)) {
-    return res.status(400).json({ message: `Invalid status. Try another` });
-  }
-  try {
-    const user = await User.findByIdAndUpdate(
-      (req.params.id === 'me') ? req.userId : req.params.id,
-      { status },
-      { new: true, runValidators: true }
-    );
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+router.patch('/update-status/:id', createPatchHandler({
+  model: User,
+  buildSearchParams: buildUserSearchParams,
+  buildUpdate: (req) => {
+    const { status } = req.body || {};
+    const allowedStatuses = ['friend', 'friend_new', 'friend_dear', 'friend_close', 'confidant'];
+
+    if (!status || !allowedStatuses.includes(status)) {
+      const error = new Error('Invalid status. Try another');
+      error.status = 400;
+      throw error;
     }
-    return res.status(200).json({ message: 'Status updated successfully', user });
-  } catch (error) {
-    return res.status(500).json({ message: error.message || 'Failed to update status' });
-  }
-});
+
+    return { status };
+  },
+  notFoundMessage: 'User not found',
+  buildSuccessPayload: (user) => ({ message: 'Status updated successfully', user }),
+}));
 
 // Place this after all requires and router initialization, before authMiddleware
 router.post('/refresh-token', async (req, res) => {
@@ -232,4 +250,6 @@ router.post('/refresh-token', async (req, res) => {
     return res.status(500).json({ message: err.message || 'Failed to refresh token' });
   }
 });
+
+module.exports = router;
 

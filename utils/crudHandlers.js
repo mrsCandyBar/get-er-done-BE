@@ -68,47 +68,103 @@ const createCreateHandler = ({
   }
 };
 
-const createUpdateHandler = ({
+const DEFAULT_FIND_AND_UPDATE_OPTIONS = {
+  returnDocument: 'after',
+  runValidators: true,
+};
+
+const defaultUpdateRecord = (currentModel, searchParams, update, options) => {
+  if (
+    searchParams &&
+    typeof searchParams === 'object' &&
+    Object.keys(searchParams).length === 1 &&
+    Object.prototype.hasOwnProperty.call(searchParams, '_id') &&
+    typeof currentModel.findByIdAndUpdate === 'function'
+  ) {
+    return currentModel.findByIdAndUpdate(searchParams._id, update, options);
+  }
+
+  return currentModel.findOneAndUpdate(searchParams, update, options);
+};
+
+const createModifyHandler = ({
   model,
   buildSearchParams,
   buildUpdate = (req) => req.body,
   notFoundMessage = 'Resource not found',
   validationErrorStatus = 400,
-  updateOptions = { new: true, runValidators: true },
+  options = DEFAULT_FIND_AND_UPDATE_OPTIONS,
   afterUpdate = async () => {},
-  updateRecord = (currentModel, searchParams, update, options) => {
-    if (
-      searchParams &&
-      typeof searchParams === 'object' &&
-      Object.keys(searchParams).length === 1 &&
-      Object.prototype.hasOwnProperty.call(searchParams, '_id') &&
-      typeof currentModel.findByIdAndUpdate === 'function'
-    ) {
-      return currentModel.findByIdAndUpdate(searchParams._id, update, options);
-    }
-
-    return currentModel.findOneAndUpdate(searchParams, update, options);
-  },
+  updateRecord = defaultUpdateRecord,
+  buildSuccessPayload = (record) => record,
 }) => async (req, res) => {
   try {
     const searchParams = buildSearchParams(req);
     const update = buildUpdate(req);
-    const record = await updateRecord(model, searchParams, update, updateOptions);
+    const record = await updateRecord(model, searchParams, update, options);
 
     if (!record) {
       return res.status(404).json({ message: notFoundMessage });
     }
 
     await afterUpdate(record, req, update);
-    res.json(record);
+    return res.json(buildSuccessPayload(record, req, update));
   } catch (err) {
     if (err.name === 'ValidationError') {
       return res.status(validationErrorStatus).json({ message: err.message });
     }
 
-    res.status(500).json({ message: err.message });
+    if (typeof err.status === 'number') {
+      return res.status(err.status).json({ message: err.message });
+    }
+
+    return res.status(500).json({ message: err.message });
   }
 };
+
+const createUpdateHandler = ({
+  model,
+  buildSearchParams,
+  buildUpdate = (req) => req.body,
+  notFoundMessage = 'Resource not found',
+  validationErrorStatus = 400,
+  updateOptions = DEFAULT_FIND_AND_UPDATE_OPTIONS,
+  afterUpdate = async () => {},
+  updateRecord = defaultUpdateRecord,
+  buildSuccessPayload = (record) => record,
+}) => createModifyHandler({
+  model,
+  buildSearchParams,
+  buildUpdate,
+  notFoundMessage,
+  validationErrorStatus,
+  options: updateOptions,
+  afterUpdate,
+  updateRecord,
+  buildSuccessPayload,
+});
+
+const createPatchHandler = ({
+  model,
+  buildSearchParams,
+  buildUpdate = (req) => req.body,
+  notFoundMessage = 'Resource not found',
+  validationErrorStatus = 400,
+  patchOptions = DEFAULT_FIND_AND_UPDATE_OPTIONS,
+  afterUpdate = async () => {},
+  updateRecord = defaultUpdateRecord,
+  buildSuccessPayload = (record) => record,
+}) => createModifyHandler({
+  model,
+  buildSearchParams,
+  buildUpdate,
+  notFoundMessage,
+  validationErrorStatus,
+  options: patchOptions,
+  afterUpdate,
+  updateRecord,
+  buildSuccessPayload,
+});
 
 const createDeleteHandler = ({
   model,
@@ -148,5 +204,6 @@ module.exports = {
   createGetOneHandler,
   createCreateHandler,
   createUpdateHandler,
+  createPatchHandler,
   createDeleteHandler,
 };

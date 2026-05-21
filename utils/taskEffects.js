@@ -154,7 +154,7 @@ const updateTaskCategoryProgress = async (categoryId, increments, updatedAt = ne
         updatedAt,
       },
     },
-    { new: true, runValidators: true }
+    { returnDocument: 'after', runValidators: true }
   );
 };
 
@@ -179,7 +179,7 @@ const applyTaskCreateEffects = async (savedTask, body = {}) => {
     await User.findByIdAndUpdate(
       userId,
       { $addToSet: { [`aspirations.${categoryKey}`]: savedTask._id } },
-      { new: true, runValidators: true }
+      { returnDocument: 'after', runValidators: true }
     );
   }
 
@@ -211,7 +211,7 @@ const applyTaskStartEffects = async (savedTask, body = {}) => {
           updatedDate: now,
         },
       },
-      { new: true, runValidators: true }
+      { returnDocument: 'after', runValidators: true }
     );
   }
 };
@@ -257,7 +257,7 @@ const applyTaskCompleteEffects = async (savedTask, body = {}, update = {}) => {
             [`achievements.${prevIndex}.completedAt`]: now,
           },
         },
-        { new: true, runValidators: true }
+        { returnDocument: 'after', runValidators: true }
       );
     }
   }
@@ -286,7 +286,7 @@ const applyTaskCompleteEffects = async (savedTask, body = {}, update = {}) => {
             },
           },
         },
-        { new: true, runValidators: true }
+        { returnDocument: 'after', runValidators: true }
       );
     }
 
@@ -303,7 +303,7 @@ const applyTaskCompleteEffects = async (savedTask, body = {}, update = {}) => {
           updatedDate: now,
         },
       },
-      { new: true, runValidators: true }
+      { returnDocument: 'after', runValidators: true }
     );
   }
 
@@ -421,7 +421,7 @@ const applyTaskDeleteEffects = async (savedTask, body = {}) => {
       };
     }
 
-    await User.findByIdAndUpdate(userId, userUpdate, { new: true, runValidators: true });
+    await User.findByIdAndUpdate(userId, userUpdate, { returnDocument: 'after', runValidators: true });
   }
 
   const categoryUpdates = {
