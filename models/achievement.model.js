@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { nowIsoTimestamp } = require('../utils/dateTime');
 
 const achievementSchema = new mongoose.Schema({
   title: {
@@ -27,7 +28,7 @@ const achievementSchema = new mongoose.Schema({
     trim: true,
   },
 }, {
-  timestamps: true,
+  timestamps: { currentTime: nowIsoTimestamp },
   collection: 'achievements',
 });
 

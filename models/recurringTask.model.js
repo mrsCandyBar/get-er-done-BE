@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { nowIsoTimestamp } = require('../utils/dateTime');
 
 const recurringTaskSchema = new mongoose.Schema({
   name: {
@@ -18,11 +19,11 @@ const recurringTaskSchema = new mongoose.Schema({
   },
   createdDate: {
     type: Date,
-    default: Date.now,
+    default: nowIsoTimestamp,
   },
   updatedDate: {
     type: Date,
-    default: Date.now,
+    default: nowIsoTimestamp,
   },
   isActive: {
     type: Boolean,

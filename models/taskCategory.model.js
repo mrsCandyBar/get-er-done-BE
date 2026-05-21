@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { nowIsoTimestamp } = require('../utils/dateTime');
 
 const taskCategorySchema = new mongoose.Schema(
   {
@@ -36,7 +37,7 @@ const taskCategorySchema = new mongoose.Schema(
     },
   },
   {
-    timestamps: true,
+    timestamps: { currentTime: nowIsoTimestamp },
     strict: false,
     collection: 'task-categories',
   }

@@ -1,4 +1,5 @@
 const Badge = require('../models/badge.model');
+const { toIsoTimestamp, nowIsoTimestamp } = require('../utils/dateTime');
 
 const buildCompletedPayload = (completedBody) => {
   if (!completedBody || typeof completedBody !== 'object' || Array.isArray(completedBody)) {
@@ -8,7 +9,10 @@ const buildCompletedPayload = (completedBody) => {
   const completed = {};
 
   if (completedBody.completedDate != null) {
-    completed.completedDate = new Date(completedBody.completedDate);
+    const isoCompletedDate = toIsoTimestamp(completedBody.completedDate);
+    if (isoCompletedDate) {
+      completed.completedDate = isoCompletedDate;
+    }
   }
 
   if (completedBody.finalNotes != null) {
@@ -45,15 +49,21 @@ const buildTaskPayload = (
   }
 
   if (includeCreatedDate) {
-    payload.createdDate = new Date();
+    payload.createdDate = nowIsoTimestamp();
   }
 
   if (includeStartedDate && body.startedDate != null) {
-    payload.startedDate = new Date(body.startedDate);
+    const isoStartedDate = toIsoTimestamp(body.startedDate);
+    if (isoStartedDate) {
+      payload.startedDate = isoStartedDate;
+    }
   }
 
   if (includeUpdatedDate && body.updatedDate != null) {
-    payload.updatedDate = new Date(body.updatedDate);
+    const isoUpdatedDate = toIsoTimestamp(body.updatedDate);
+    if (isoUpdatedDate) {
+      payload.updatedDate = isoUpdatedDate;
+    }
   }
 
   if (Array.isArray(body.recur)) {
@@ -103,41 +113,78 @@ const pickRandom = (items = []) => {
   return items[index] ?? null;
 };
 
+const getRandomBadgeFor = async (gainedFromValues = []) => {
+  const values = Array.isArray(gainedFromValues) ? gainedFromValues.filter(Boolean) : [gainedFromValues];
+  if (values.length === 0) {
+    return null;
+  }
+
+  const badges = await Badge.find({ gainedFrom: { $in: values } }).select('_id types').lean();
+  const badge = pickRandom(badges);
+
+  if (!badge || !badge._id) {
+    return null;
+  }
+
+  return {
+    badgeId: String(badge._id),
+    type: pickRandom(badge.types) ?? null,
+  };
+};
+
 const buildTaskStartPayload = async () => {
-  const now = new Date();
+  const nowIso = nowIsoTimestamp();
+  const selectedBadge = await getRandomBadgeFor('start');
+
   const payload = {
-    startedDate: now,
-    updatedDate: now,
-    state: 'busy',
+    $set: {
+      startedDate: nowIso,
+      updatedDate: nowIso,
+      state: 'busy',
+    },
+    $push: {
+      'badges.started.date': nowIso,
+    },
   };
 
-  const startBadges = await Badge.find({ gainedFrom: 'start' }).select('_id types').lean();
-  const selectedBadge = pickRandom(startBadges);
-
-  if (selectedBadge && selectedBadge._id) {
-    payload.badges = {
-      started: {
-        date: now.toISOString(),
-        badgeId: String(selectedBadge._id),
-        type: pickRandom(selectedBadge.types) ?? null,
-      },
-    };
+  if (selectedBadge) {
+    payload.$set['badges.started.badgeId'] = selectedBadge.badgeId;
+    payload.$set['badges.started.type'] = selectedBadge.type;
   }
 
   return payload;
 };
 
-const buildTaskPausePayload = () => ({
-  updatedDate: new Date(),
-});
+const buildTaskPausePayload = async () => {
+  const nowIso = nowIsoTimestamp();
+  const selectedBadge = await getRandomBadgeFor(['pause', 'paused']);
 
-const buildTaskCompletePayload = (body = {}) => {
-  const now = new Date();
+  const payload = {
+    $set: {
+      updatedDate: nowIso,
+    },
+    $push: {
+      'badges.paused.date': nowIso,
+    },
+  };
+
+  if (selectedBadge) {
+    payload.$set['badges.paused.badgeId'] = selectedBadge.badgeId;
+    payload.$set['badges.paused.type'] = selectedBadge.type;
+  }
+
+  return payload;
+};
+
+const buildTaskCompletePayload = async (body = {}) => {
+  const nowIso = nowIsoTimestamp();
   const finalNotes = body.finalNotes ?? body.completed?.finalNotes;
   const recur = body.recur ?? body.completed?.recur;
+  const completeBadge = await getRandomBadgeFor('complete');
+  const recurBadge = Boolean(recur) ? await getRandomBadgeFor('recur') : null;
 
   const completed = {
-      completedDate: now,
+      completedDate: nowIso,
       mood: body.mood ?? body.completed?.mood,
   };
 
@@ -149,11 +196,31 @@ const buildTaskCompletePayload = (body = {}) => {
     completed.recur = Boolean(recur);
   }
 
-  return {
-    updatedDate: now,
-    completed,
-    state: 'complete',
+  const payload = {
+    $set: {
+      updatedDate: nowIso,
+      completed,
+      state: 'complete',
+    },
   };
+
+  if (completeBadge) {
+    payload.$set['badges.completed'] = {
+      date: nowIso,
+      badgeId: completeBadge.badgeId,
+      type: completeBadge.type,
+    };
+  }
+
+  if (recurBadge) {
+    payload.$set['badges.recur'] = {
+      date: nowIso,
+      badgeId: recurBadge.badgeId,
+      type: recurBadge.type,
+    };
+  }
+
+  return payload;
 };
 
 module.exports = {

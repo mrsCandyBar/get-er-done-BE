@@ -22,6 +22,12 @@
  *           type: string
  *         gainedFrom:
  *           type: string
+ *           description: Event that awards this badge (for example start, pause, complete, recur)
+ *         types:
+ *           type: array
+ *           items:
+ *             type: string
+ *           description: Candidate type strings used when assigning a random badge type
  *         physicalTrait:
  *           type: object
  *           properties:
@@ -97,7 +103,8 @@
  *         title: "First Badge"
  *         description: "Completed your first milestone."
  *         tagline: "You earned it!"
- *         gainedFrom: "tasks"
+ *         gainedFrom: "start"
+ *         types: ["badge_shiny", "badge_hyped", "badge_confident"]
  *         physicalTrait:
  *           icon:
  *             value: "star"
@@ -136,6 +143,10 @@
  *           type: string
  *         gainedFrom:
  *           type: string
+ *         types:
+ *           type: array
+ *           items:
+ *             type: string
  *         physicalTrait:
  *           $ref: '#/components/schemas/Badge/properties/physicalTrait'
  *       required:
@@ -143,6 +154,7 @@
  *         - description
  *         - tagline
  *         - gainedFrom
+ *         - types
  */
 
 /**

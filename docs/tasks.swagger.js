@@ -30,12 +30,15 @@
  *         createdDate:
  *           type: string
  *           format: date-time
+ *           description: ISO 8601 timestamp
  *         startedDate:
  *           type: string
  *           format: date-time
+ *           description: ISO 8601 timestamp
  *         updatedDate:
  *           type: string
  *           format: date-time
+ *           description: ISO 8601 timestamp
  *         recur:
  *           type: array
  *           items:
@@ -55,10 +58,62 @@
 *             completedDate:
 *               type: string
 *               format: date-time
+*               description: ISO 8601 timestamp
 *             finalNotes:
 *               type: string
 *             recur:
 *               type: boolean
+ *         badges:
+ *           type: object
+ *           properties:
+ *             started:
+ *               type: object
+ *               properties:
+ *                 date:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                     format: date-time
+ *                   description: ISO 8601 timestamp history for every start action
+ *                 badgeId:
+ *                   type: string
+ *                 type:
+ *                   type: string
+ *             paused:
+ *               type: object
+ *               properties:
+ *                 date:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                     format: date-time
+ *                   description: ISO 8601 timestamp history for every pause action
+ *                 badgeId:
+ *                   type: string
+ *                 type:
+ *                   type: string
+ *             completed:
+ *               type: object
+ *               properties:
+ *                 date:
+ *                   type: string
+ *                   format: date-time
+ *                   description: ISO 8601 timestamp for completion badge assignment
+ *                 badgeId:
+ *                   type: string
+ *                 type:
+ *                   type: string
+ *             recur:
+ *               type: object
+ *               properties:
+ *                 date:
+ *                   type: string
+ *                   format: date-time
+ *                   description: ISO 8601 timestamp for recur badge assignment
+ *                 badgeId:
+ *                   type: string
+ *                 type:
+ *                   type: string
  *         category:
  *           type: string
  *           description: Related task category ID
@@ -76,6 +131,23 @@
 *           completedDate: 2026-10-03T22:00:00.000Z
 *           finalNotes: will do this again!
 *           recur: true
+ *         badges:
+ *           started:
+ *             date: ["2026-10-04T09:00:00.000Z", "2026-10-04T11:15:00.000Z"]
+ *             badgeId: 6628e7b2c1a4e2a1b8c1d2e3
+ *             type: badge_hyped
+ *           paused:
+ *             date: ["2026-10-04T10:10:00.000Z"]
+ *             badgeId: 6628e7b2c1a4e2a1b8c1d2e4
+ *             type: badge_calm
+ *           completed:
+ *             date: 2026-10-05T12:30:00.000Z
+ *             badgeId: 6628e7b2c1a4e2a1b8c1d2e5
+ *             type: badge_finish
+ *           recur:
+ *             date: 2026-10-05T12:30:00.000Z
+ *             badgeId: 6628e7b2c1a4e2a1b8c1d2e6
+ *             type: badge_recur
  *         category: 69d769a5b3f97a842c094800
  *     TaskInput:
  *       type: object
@@ -89,9 +161,11 @@
  *         startedDate:
  *           type: string
  *           format: date-time
+ *           description: ISO 8601 timestamp
  *         updatedDate:
  *           type: string
  *           format: date-time
+ *           description: ISO 8601 timestamp
  *         recur:
  *           type: array
  *           items:
@@ -107,6 +181,7 @@
  *             completedDate:
  *               type: string
  *               format: date-time
+ *               description: ISO 8601 timestamp
  *             finalNotes:
  *               type: string
  *             recur:
@@ -132,6 +207,7 @@
  *         userId: 69d977b8abda6e6ee0cc1f29
  *     TaskStartInput:
  *       type: object
+ *       description: The server sets state, updates started/updated dates as ISO timestamps, appends badges.started.date history, and assigns a random start badge
  *       properties:
  *         userId:
  *           type: string
@@ -140,7 +216,7 @@
  *         userId: 69d977b8abda6e6ee0cc1f29
  *     TaskPauseInput:
  *       type: object
- *       description: No request body fields are required; the server sets the task updated date automatically
+ *       description: No request body fields are required; the server appends paused date history as ISO timestamps and assigns a random pause badge
  *       example: {}
  *     TaskDeleteInput:
  *       type: object
@@ -153,6 +229,7 @@
  *         achievementProperty: waiting
  *     TaskCompleteInput:
  *       type: object
+ *       description: The server stores completion and update dates as ISO timestamps and assigns random complete/recur badges
  *       properties:
  *         finalNotes:
  *           type: string

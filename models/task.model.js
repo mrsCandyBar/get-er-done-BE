@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { nowIsoTimestamp } = require('../utils/dateTime');
 
 const completedSchema = new mongoose.Schema(
   {
@@ -59,7 +60,7 @@ const taskSchema = new mongoose.Schema(
     },
     createdDate: {
       type: Date,
-      default: Date.now,
+      default: nowIsoTimestamp,
     },
     startedDate: {
       type: Date,
@@ -82,8 +83,8 @@ const taskSchema = new mongoose.Schema(
     badges: {
       started: {
         date: {
-          type: String,
-          default: null,
+          type: [String],
+          default: [],
         },
         badgeId: {
           type: String,
@@ -96,8 +97,8 @@ const taskSchema = new mongoose.Schema(
       },
       paused: {
         date: {
-          type: String,
-          default: null,
+          type: [String],
+          default: [],
         },
         badgeId: {
           type: String,

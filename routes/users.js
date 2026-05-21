@@ -14,6 +14,7 @@ const {
 const { buildUserPayload } = require('../payloads/buildUserPayload');
 const { signUserToken } = require('../utils/jwt');
 const authMiddleware = require('../utils/authMiddleware');
+const { nowIsoTimestamp } = require('../utils/dateTime');
 
 const verifyGoogleIdToken = async (idToken) => {
   if (typeof globalThis.fetch !== 'function') {
@@ -55,7 +56,7 @@ const buildGoogleUserProfile = (googlePayload = {}) => {
     .filter(Boolean)
     .join(' ')
     .trim();
-  const now = new Date();
+  const now = nowIsoTimestamp();
 
   return {
     name: String(googlePayload.name || fallbackName || email.split('@')[0] || 'Google User').trim(),

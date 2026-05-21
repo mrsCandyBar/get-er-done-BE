@@ -8,6 +8,7 @@ const {
   createUpdateHandler,
   createDeleteHandler,
 } = require('../utils/crudHandlers');
+const { nowIsoTimestamp, toIsoTimestamp } = require('../utils/dateTime');
 
 const authMiddleware = require('../utils/authMiddleware');
 
@@ -35,13 +36,27 @@ router.get('/get/:id', createGetOneHandler({
 
 router.post('/create', createCreateHandler({
   model: RecurringTask,
-  buildPayload: (req) => req.body,
+  buildPayload: (req) => {
+    const payload = { ...req.body };
+    payload.createdDate = toIsoTimestamp(payload.createdDate) ?? nowIsoTimestamp();
+    payload.updatedDate = toIsoTimestamp(payload.updatedDate) ?? nowIsoTimestamp();
+    return payload;
+  },
 }));
 
 router.put('/update/:id', createUpdateHandler({
   model: RecurringTask,
   buildSearchParams: (req) => ({ _id: req.params.id }),
-  buildUpdate: (req) => req.body,
+  buildUpdate: (req) => {
+    const payload = { ...req.body };
+
+    if (payload.createdDate != null) {
+      payload.createdDate = toIsoTimestamp(payload.createdDate);
+    }
+
+    payload.updatedDate = nowIsoTimestamp();
+    return payload;
+  },
   notFoundMessage: 'Recurring task not found',
 }));
 

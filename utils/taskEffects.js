@@ -2,6 +2,7 @@ const Task = require('../models/task.model');
 const User = require('../models/user.model');
 const TaskCategory = require('../models/taskCategory.model');
 const { buildTaskPayload } = require('../payloads/buildTaskPayload');
+const { nowIsoTimestamp } = require('./dateTime');
 
 const ASPIRATION_KEYS = new Set(['task', 'fun', 'new']);
 const ACHIEVEMENT_PROGRESS_KEYS = new Set(['busy', 'waiting']);
@@ -141,7 +142,7 @@ const findAssociatedUser = async (savedTask, body = {}, categoryKey) => {
   };
 };
 
-const updateTaskCategoryProgress = async (categoryId, increments, updatedAt = new Date()) => {
+const updateTaskCategoryProgress = async (categoryId, increments, updatedAt = nowIsoTimestamp()) => {
   if (!categoryId) {
     return;
   }
@@ -196,7 +197,7 @@ const applyTaskStartEffects = async (savedTask, body = {}) => {
 
   const { categoryId, categoryKey } = await resolveCategoryDetails(savedTask, body);
   const { userId } = await findAssociatedUser(savedTask, body, categoryKey);
-  const now = new Date();
+  const now = nowIsoTimestamp();
 
   await updateTaskCategoryProgress(categoryId, {
     'achievements.busy': 1,
@@ -234,9 +235,11 @@ const applyTaskCompleteEffects = async (savedTask, body = {}, update = {}) => {
     return;
   }
 
+  const completedUpdate = update?.completed || update?.$set?.completed || {};
+
   const { categoryId, categoryKey } = await resolveCategoryDetails(savedTask, body);
   const { userId, user } = await findAssociatedUser(savedTask, body, categoryKey);
-  const now = new Date();
+  const now = nowIsoTimestamp();
 
   // Update completedAt for the previous achievement and set createdAt for the new one
   if (userId && user && Array.isArray(user.achievements)) {
@@ -246,7 +249,7 @@ const applyTaskCompleteEffects = async (savedTask, body = {}, update = {}) => {
       const latestAchievement = achievements[prevIndex] || {};
       const updatedCompleted = {
         ...latestAchievement.completed,
-        ...(update?.completed || {}),
+        ...completedUpdate,
         ...(body.completed || {}),
       };
       await User.findByIdAndUpdate(
@@ -307,7 +310,7 @@ const applyTaskCompleteEffects = async (savedTask, body = {}, update = {}) => {
     );
   }
 
-  const shouldRecur = Boolean(update?.completed?.recur ?? body.recur ?? body.completed?.recur);
+  const shouldRecur = Boolean(completedUpdate?.recur ?? body.recur ?? body.completed?.recur);
   const RecurringTask = require('../models/recurringTask.model');
   const TaskModel = require('../models/task.model');
   let recurId = savedTask.recurId || null;
@@ -342,7 +345,7 @@ const applyTaskCompleteEffects = async (savedTask, body = {}, update = {}) => {
         const savedNewTask = await newTask.save();
         // Add new taskId to recurringTaskDoc.taskIds and update updatedDate
         recurringTaskDoc.taskIds.push(savedNewTask._id);
-        recurringTaskDoc.updatedDate = new Date();
+        recurringTaskDoc.updatedDate = nowIsoTimestamp();
         await recurringTaskDoc.save();
         await applyTaskCreateEffects(savedNewTask, recurringPayload);
       }
@@ -384,7 +387,7 @@ const applyTaskCompleteEffects = async (savedTask, body = {}, update = {}) => {
       const savedNewTask = await newTask.save();
       // Add new taskId to recurringTask.taskIds and update updatedDate
       savedRecurringTask.taskIds.push(savedNewTask._id);
-      savedRecurringTask.updatedDate = new Date();
+      savedRecurringTask.updatedDate = nowIsoTimestamp();
       await savedRecurringTask.save();
       await applyTaskCreateEffects(savedNewTask, recurringPayload);
     }
@@ -393,7 +396,7 @@ const applyTaskCompleteEffects = async (savedTask, body = {}, update = {}) => {
     const recurringTaskDoc = await RecurringTask.findById(recurId);
     if (recurringTaskDoc) {
       recurringTaskDoc.isActive = false;
-      recurringTaskDoc.updatedDate = new Date();
+      recurringTaskDoc.updatedDate = nowIsoTimestamp();
       await recurringTaskDoc.save();
     }
   }
@@ -406,7 +409,7 @@ const applyTaskDeleteEffects = async (savedTask, body = {}) => {
 
   const { categoryId, categoryKey } = await resolveCategoryDetails(savedTask, body);
   const { userId } = await findAssociatedUser(savedTask, body, categoryKey);
-  const now = new Date();
+  const now = nowIsoTimestamp();
 
   if (userId) {
     const userUpdate = {

@@ -1,3 +1,5 @@
+const { toIsoTimestamp } = require('../utils/dateTime');
+
 const buildTaskIdBucket = (bucket) => {
   if (!bucket || typeof bucket !== 'object' || Array.isArray(bucket)) {
     return undefined;
@@ -55,7 +57,10 @@ const buildUserPayload = (body = {}) => {
   }
 
   if (body.dob != null) {
-    payload.dob = new Date(body.dob);
+    const isoDob = toIsoTimestamp(body.dob);
+    if (isoDob) {
+      payload.dob = isoDob;
+    }
   }
 
   if (body.about != null) {
@@ -91,15 +96,24 @@ const buildUserPayload = (body = {}) => {
   }
 
   if (body.startedDate != null) {
-    payload.startedDate = new Date(body.startedDate);
+    const isoStartedDate = toIsoTimestamp(body.startedDate);
+    if (isoStartedDate) {
+      payload.startedDate = isoStartedDate;
+    }
   }
 
   if (body.updatedDate != null) {
-    payload.updatedDate = new Date(body.updatedDate);
+    const isoUpdatedDate = toIsoTimestamp(body.updatedDate);
+    if (isoUpdatedDate) {
+      payload.updatedDate = isoUpdatedDate;
+    }
   }
 
   if (body.lastLoginDate != null) {
-    payload.lastLoginDate = new Date(body.lastLoginDate);
+    const isoLastLoginDate = toIsoTimestamp(body.lastLoginDate);
+    if (isoLastLoginDate) {
+      payload.lastLoginDate = isoLastLoginDate;
+    }
   }
 
   if (body.status != null) {

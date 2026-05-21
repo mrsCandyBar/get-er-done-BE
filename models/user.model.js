@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { nowIsoTimestamp } = require('../utils/dateTime');
 
 const inspirationSchema = new mongoose.Schema(
   {
@@ -133,11 +134,11 @@ const userSchema = new mongoose.Schema(
     },
     startedDate: {
       type: Date,
-      default: Date.now,
+      default: nowIsoTimestamp,
     },
     updatedDate: {
       type: Date,
-      default: Date.now,
+      default: nowIsoTimestamp,
     },
     lastLoginDate: {
       type: Date,

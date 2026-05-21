@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { nowIsoTimestamp } = require('../utils/dateTime');
 
 const badgeSchema = new mongoose.Schema({
   title: {
@@ -62,7 +63,7 @@ const badgeSchema = new mongoose.Schema({
     }
   }
 }, {
-  timestamps: true,
+  timestamps: { currentTime: nowIsoTimestamp },
   collection: 'badges',
 });
 
