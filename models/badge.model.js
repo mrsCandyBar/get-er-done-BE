@@ -21,6 +21,11 @@ const badgeSchema = new mongoose.Schema({
     required: true,
     trim: true,
   },
+  types: {
+    type: [String],
+    required: true,
+    trim: true,
+  },
   physicalTrait: {
     icon: {
         value: String,

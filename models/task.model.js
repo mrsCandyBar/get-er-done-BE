@@ -79,6 +79,64 @@ const taskSchema = new mongoose.Schema(
       enum: ['waiting', 'busy', 'complete'],
       default: 'waiting',
     },
+    badges: {
+      started: {
+        date: {
+          type: String,
+          default: null,
+        },
+        badgeId: {
+          type: String,
+          default: null,
+        },
+        type: {
+          type: String,
+          default: null,
+        },
+      },
+      paused: {
+        date: {
+          type: String,
+          default: null,
+        },
+        badgeId: {
+          type: String,
+          default: null,
+        },
+        type: {
+          type: String,
+          default: null,
+        },
+      },
+      completed: {
+        date: {
+          type: String,
+          default: null,
+        },
+        badgeId: {
+          type: String,
+          default: null,
+        },
+        type: {
+          type: String,
+          default: null,
+        },
+      },
+      recur: {
+        date: {
+          type: String,
+          default: null,
+        },
+        badgeId: {
+          type: String,
+          default: null,
+        },
+        type: {
+          type: String,
+          default: null,
+        },
+      },
+    },
     completed: {
       type: completedSchema,
       default: undefined,

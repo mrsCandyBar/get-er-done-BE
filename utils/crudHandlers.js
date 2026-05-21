@@ -100,7 +100,7 @@ const createModifyHandler = ({
 }) => async (req, res) => {
   try {
     const searchParams = buildSearchParams(req);
-    const update = buildUpdate(req);
+    const update = await buildUpdate(req);
     const record = await updateRecord(model, searchParams, update, options);
 
     if (!record) {

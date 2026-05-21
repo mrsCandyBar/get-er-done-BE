@@ -1,3 +1,5 @@
+const Badge = require('../models/badge.model');
+
 const buildCompletedPayload = (completedBody) => {
   if (!completedBody || typeof completedBody !== 'object' || Array.isArray(completedBody)) {
     return undefined;
@@ -92,13 +94,37 @@ const buildTaskPayload = (
   return payload;
 };
 
-const buildTaskStartPayload = () => {
+const pickRandom = (items = []) => {
+  if (!Array.isArray(items) || items.length === 0) {
+    return null;
+  }
+
+  const index = Math.floor(Math.random() * items.length);
+  return items[index] ?? null;
+};
+
+const buildTaskStartPayload = async () => {
   const now = new Date();
-  return {
+  const payload = {
     startedDate: now,
     updatedDate: now,
     state: 'busy',
   };
+
+  const startBadges = await Badge.find({ gainedFrom: 'start' }).select('_id types').lean();
+  const selectedBadge = pickRandom(startBadges);
+
+  if (selectedBadge && selectedBadge._id) {
+    payload.badges = {
+      started: {
+        date: now.toISOString(),
+        badgeId: String(selectedBadge._id),
+        type: pickRandom(selectedBadge.types) ?? null,
+      },
+    };
+  }
+
+  return payload;
 };
 
 const buildTaskPausePayload = () => ({
